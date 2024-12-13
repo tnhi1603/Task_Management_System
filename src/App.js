@@ -226,7 +226,7 @@ function App() {
   const [filteredTasks, setFilteredTasks] = useState(tasksBefore); // Danh s�ch �? l?c
   return (
     <Router>
-      <Navbar />
+      {/* <Navbar /> */}
 
       <Routes>
         {/* Muốn bật Login và Register thì đóng Navbar và các Route khác rồi hãy bật lên lại */}
