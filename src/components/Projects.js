@@ -277,7 +277,7 @@ const mockProjects = [
   },
 ];
 
-const Management = () => {
+const Projects = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formData, setFormData] = useState({});
@@ -587,7 +587,7 @@ const Management = () => {
         alignItems="center"
         mb={4}
       >
-        <Typography variant="h4">Project Management</Typography>
+        <Typography variant="h4">Projects</Typography>
         <Button
           variant="contained"
           startIcon={<FaPlus />}
@@ -610,4 +610,4 @@ const Management = () => {
   );
 };
 
-export default Management;
+export default Projects;

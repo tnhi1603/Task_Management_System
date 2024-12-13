@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -25,15 +24,6 @@ const TaskListPage = ({ tasksBefore, filteredTasks }) => {
     sortBy: "dueDate", // Mặc định sắp xếp theo ngày hoàn thành
   });
 
-  //   Lấy dữ liệu công việc từ backend
-  //   useEffect(() => {
-  //     const fetchTasks = async () => {
-  //       const response = await axios.get("/api/tasks", { params: filter });
-  //       setTasks(response.data);
-  //     };
-  //     fetchTasks();
-  //   }, [filter]);
-
   // Hàm xử lý thay đổi bộ lọc
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -41,30 +31,15 @@ const TaskListPage = ({ tasksBefore, filteredTasks }) => {
   };
 
   return (
-    <Box>
+    <Box sx={{ marginTop: "64px" }}> {/* Thêm khoảng cách từ đầu lề */}
       {/* Bộ lọc */}
       <Box display="flex" gap={2} marginBottom={2}>
-        {/* <TextField
-          label="Dự án"
-          select
-          name="project"
-          value={filter.project}
-          onChange={handleFilterChange}
-          sx={{ width: "300px" }}
-        >
-          <MenuItem value="">Tất cả</MenuItem>
-          <MenuItem value="Project1">Dự án 1</MenuItem>
-          <MenuItem value="Project2">Dự án 2</MenuItem>
-    
-        </TextField> */}
-
         <TextField
           label="Ưu tiên"
           select
           name="priority"
           value={filter.priority}
           onChange={handleFilterChange}
-          // fullWidth
           sx={{ width: "300px" }}
         >
           <MenuItem value="">Tất cả</MenuItem>
@@ -73,10 +48,7 @@ const TaskListPage = ({ tasksBefore, filteredTasks }) => {
           <MenuItem value="Low">Thấp</MenuItem>
         </TextField>
 
-        <FormControl
-          // fullWidth
-          sx={{ width: "300px" }}
-        >
+        <FormControl sx={{ width: "300px" }}>
           <InputLabel>Sắp xếp theo</InputLabel>
           <Select
             label="Sắp xếp theo"
