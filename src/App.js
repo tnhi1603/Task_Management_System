@@ -1,8 +1,6 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import Login from "./components/Login";
-import Register from "./components/Register";
 import UserProfile from "./components/UserProfile";
 import Management from "./components/Projects";
 import Home from "./pages/Home";
@@ -222,48 +220,48 @@ const tasksBefore = [
     notes: "Th�m ch?c n�ng t?m ki?m v� ph�n trang.",
   },
 ];
+
+function Layout({ children }) {
+  const location = useLocation();
+  return (
+    <>
+      {location.pathname !== "/login" && <Navbar />}
+      {children}
+    </>
+  );
+}
+
 function App() {
-  const [filteredTasks, setFilteredTasks] = useState(tasksBefore); // Danh s�ch �? l?c
+  const [filteredTasks, setFilteredTasks] = useState(tasksBefore); //danh sách đã lọc
   return (
     <Router>
-      <Navbar />
-
-      <Routes>
-        {/* Muốn bật Login và Register thì đóng Navbar và các Route khác rồi hãy bật lên lại */}
-        {/* <Route path="/" element={<AuthComponent />}/>   */}
-
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/projects" element={<Management />} />
-        <Route path="/profile" element={<UserProfile />} />
-
-        <Route
-          path="/"
-          element={
-            <Dashboard
-              filteredTasks={filteredTasks}
-              setFilteredTasks={setFilteredTasks}
-            />
-          }
-        />
-        <Route
-          path="/tasks"
-          element={
-            <TaskListPage
-              filteredTasks={filteredTasks}
-              tasksBefore={tasksBefore}
-            />
-          }
-        />
-        <Route
-          path="/task-details"
-          element={
-            <TaskDetailPage
-            // filteredTasks={filteredTasks}
-            // tasksBefore={tasksBefore}
-            />
-          }
-        />
-      </Routes>
+      <Layout>
+        <Routes>
+          <Route path="/login" element={<AuthComponent />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/projects" element={<Management />} />
+          <Route path="/profile" element={<UserProfile />} />
+          <Route
+            path="/"
+            element={
+              <Dashboard
+                filteredTasks={filteredTasks}
+                setFilteredTasks={setFilteredTasks}
+              />
+            }
+          />
+          <Route
+            path="/tasks"
+            element={
+              <TaskListPage
+                filteredTasks={filteredTasks}
+                tasksBefore={tasksBefore}
+              />
+            }
+          />
+          <Route path="/task-details" element={<TaskDetailPage />} />
+        </Routes>
+      </Layout>
     </Router>
   );
 }
