@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   Box,
@@ -40,6 +41,7 @@ const BackgroundBox = styled(Box)({
 });
 
 const AuthComponent = () => {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -132,6 +134,10 @@ const AuthComponent = () => {
             severity: "success",
           });
           localStorage.setItem("token", response.data.token);
+          // Chuyển hướng đến Dashboard sau khi login thành công
+          setTimeout(() => {
+            navigate("/");
+          }, 2000)
         } else {
           // Register API call
           await axios.post("http://localhost:5000/api/auth/register", {
