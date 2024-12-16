@@ -4,15 +4,16 @@ import Navbar from "./components/Navbar";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import UserProfile from "./components/UserProfile";
-import Management from "./components/Management";
+import Management from "./components/Projects";
 import Home from "./pages/Home";
 import { Container } from "@mui/material";
 import { Box } from "@mui/material";
 import Notifications from "./components/Notifications";
+import AuthComponent from "./components/AuthComponent";
 //
-// import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 // import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-// import Navbar from "./components/NavBar";
+
 import Dashboard from "./pages/Dashboard/Dashboard";
 import TaskListPage from "./pages/TaskListPage/TaskListPage";
 import TaskDetailPage from "./pages/TaskDetailPage/TaskDetailPage";
@@ -21,218 +22,220 @@ const tasksBefore = [
   {
     id: 1,
     title: "Thi?t k? giao di?n Dashboard",
-    description: "T?o mockup cho giao di?n qu?n l? công vi?c.",
+    description: "T?o mockup cho giao di?n qu?n l? cï¿½ng vi?c.",
     priority: "High",
     status: "In Progress",
     dueDate: "2024-12-10",
     relatedTasks: [2, 3],
-    notes: "S? d?ng Figma ð? thi?t k?.",
+    notes: "S? d?ng Figma ï¿½? thi?t k?.",
   },
   {
     id: 2,
-    title: "Phát tri?n API cho module công vi?c",
-    description: "T?o các endpoint RESTful ð? thêm, s?a, xóa công vi?c.",
+    title: "Phï¿½t tri?n API cho module cï¿½ng vi?c",
+    description: "T?o cï¿½c endpoint RESTful ï¿½? thï¿½m, s?a, xï¿½a cï¿½ng vi?c.",
     priority: "Medium",
     status: "Not Started",
     dueDate: "2024-12-15",
     relatedTasks: [1],
-    notes: "D?a trên mockup ðý?c thi?t k?.",
+    notes: "D?a trï¿½n mockup ï¿½ï¿½?c thi?t k?.",
   },
   {
     id: 3,
-    title: "Th?o lu?n yêu c?u v?i nhóm",
-    description: "H?p nhóm ð? xác ð?nh yêu c?u chi ti?t c?a ph?n m?m.",
+    title: "Th?o lu?n yï¿½u c?u v?i nhï¿½m",
+    description: "H?p nhï¿½m ï¿½? xï¿½c ï¿½?nh yï¿½u c?u chi ti?t c?a ph?n m?m.",
     priority: "Low",
     status: "Completed",
     dueDate: "2024-12-01",
     relatedTasks: [1],
-    notes: "Hoàn thành tài li?u yêu c?u.",
+    notes: "Hoï¿½n thï¿½nh tï¿½i li?u yï¿½u c?u.",
   },
   {
     id: 4,
-    title: "Tích h?p tính nãng t?m ki?m",
-    description: "Thêm tính nãng t?m ki?m công vi?c theo tiêu chí.",
+    title: "Tï¿½ch h?p tï¿½nh nï¿½ng t?m ki?m",
+    description: "Thï¿½m tï¿½nh nï¿½ng t?m ki?m cï¿½ng vi?c theo tiï¿½u chï¿½.",
     priority: "High",
     status: "In Progress",
     dueDate: "2024-12-20",
     relatedTasks: [2],
-    notes: "S? d?ng thý vi?n Fuse.js ð? h? tr? t?m ki?m.",
+    notes: "S? d?ng thï¿½ vi?n Fuse.js ï¿½? h? tr? t?m ki?m.",
   },
   {
     id: 5,
-    title: "Vi?t tài li?u hý?ng d?n s? d?ng",
+    title: "Vi?t tï¿½i li?u hï¿½?ng d?n s? d?ng",
     description:
-      "T?o hý?ng d?n chi ti?t cho ngý?i dùng v? cách s? d?ng ?ng d?ng.",
+      "T?o hï¿½?ng d?n chi ti?t cho ngï¿½?i dï¿½ng v? cï¿½ch s? d?ng ?ng d?ng.",
     priority: "Medium",
     status: "Not Started",
     dueDate: "2024-12-25",
     relatedTasks: [],
-    notes: "Kèm theo h?nh minh h?a.",
+    notes: "Kï¿½m theo h?nh minh h?a.",
   },
   {
     id: 6,
     title: "Th?c hi?n ki?m th? unit",
-    description: "Vi?t và ch?y các bài ki?m th? cho module công vi?c.",
+    description: "Vi?t vï¿½ ch?y cï¿½c bï¿½i ki?m th? cho module cï¿½ng vi?c.",
     priority: "High",
     status: "In Progress",
     dueDate: "2024-12-12",
     relatedTasks: [2],
-    notes: "S? d?ng Jest và React Testing Library.",
+    notes: "S? d?ng Jest vï¿½ React Testing Library.",
   },
   {
     id: 7,
-    title: "Tri?n khai ?ng d?ng lên server",
-    description: "C?u h?nh và tri?n khai ?ng d?ng lên AWS.",
+    title: "Tri?n khai ?ng d?ng lï¿½n server",
+    description: "C?u h?nh vï¿½ tri?n khai ?ng d?ng lï¿½n AWS.",
     priority: "High",
     status: "Not Started",
     dueDate: "2024-12-30",
     relatedTasks: [4, 5],
-    notes: "Ð?m b?o b?o m?t và t?i ýu hóa hi?u nãng.",
+    notes: "ï¿½?m b?o b?o m?t vï¿½ t?i ï¿½u hï¿½a hi?u nï¿½ng.",
   },
   {
     id: 8,
-    title: "T?i ýu hóa hi?u nãng ?ng d?ng",
-    description: "Phân tích và c?i thi?n hi?u su?t t?i trang.",
+    title: "T?i ï¿½u hï¿½a hi?u nï¿½ng ?ng d?ng",
+    description: "Phï¿½n tï¿½ch vï¿½ c?i thi?n hi?u su?t t?i trang.",
     priority: "Medium",
     status: "Not Started",
     dueDate: "2024-12-28",
     relatedTasks: [7],
-    notes: "S? d?ng Lighthouse ð? ki?m tra hi?u nãng.",
+    notes: "S? d?ng Lighthouse ï¿½? ki?m tra hi?u nï¿½ng.",
   },
   {
     id: 9,
-    title: "Thi?t k? logo và favicon",
-    description: "T?o logo và favicon cho ?ng d?ng.",
+    title: "Thi?t k? logo vï¿½ favicon",
+    description: "T?o logo vï¿½ favicon cho ?ng d?ng.",
     priority: "Low",
     status: "Completed",
     dueDate: "2024-11-25",
     relatedTasks: [],
-    notes: "Thi?t k? t?i gi?n, phù h?p v?i giao di?n.",
+    notes: "Thi?t k? t?i gi?n, phï¿½ h?p v?i giao di?n.",
   },
   {
     id: 10,
-    title: "T?o h? th?ng thông báo",
-    description: "Thêm tính nãng thông báo khi công vi?c g?n h?t h?n.",
+    title: "T?o h? th?ng thï¿½ng bï¿½o",
+    description: "Thï¿½m tï¿½nh nï¿½ng thï¿½ng bï¿½o khi cï¿½ng vi?c g?n h?t h?n.",
     priority: "High",
     status: "In Progress",
     dueDate: "2024-12-18",
     relatedTasks: [4],
-    notes: "G?i thông báo qua email và SMS.",
+    notes: "G?i thï¿½ng bï¿½o qua email vï¿½ SMS.",
   },
   {
     id: 11,
-    title: "C?p nh?t UI cho trang công vi?c",
-    description: "C?i ti?n giao di?n hi?n th? danh sách công vi?c.",
+    title: "C?p nh?t UI cho trang cï¿½ng vi?c",
+    description: "C?i ti?n giao di?n hi?n th? danh sï¿½ch cï¿½ng vi?c.",
     priority: "Medium",
     status: "In Progress",
     dueDate: "2024-12-15",
     relatedTasks: [1],
-    notes: "Thêm ch?c nãng l?c và phân trang.",
+    notes: "Thï¿½m ch?c nï¿½ng l?c vï¿½ phï¿½n trang.",
   },
   {
     id: 12,
-    title: "Phân quy?n ngý?i dùng",
-    description: "Thêm tính nãng qu?n l? vai tr? và quy?n h?n.",
+    title: "Phï¿½n quy?n ngï¿½?i dï¿½ng",
+    description: "Thï¿½m tï¿½nh nï¿½ng qu?n l? vai tr? vï¿½ quy?n h?n.",
     priority: "High",
     status: "Not Started",
     dueDate: "2024-12-22",
     relatedTasks: [],
-    notes: "Ch? admin m?i có quy?n xóa công vi?c.",
+    notes: "Ch? admin m?i cï¿½ quy?n xï¿½a cï¿½ng vi?c.",
   },
   {
     id: 13,
-    title: "Ðào t?o s? d?ng ph?n m?m",
-    description: "T? ch?c bu?i ðào t?o cho khách hàng.",
+    title: "ï¿½ï¿½o t?o s? d?ng ph?n m?m",
+    description: "T? ch?c bu?i ï¿½ï¿½o t?o cho khï¿½ch hï¿½ng.",
     priority: "Low",
     status: "Not Started",
     dueDate: "2025-01-10",
     relatedTasks: [5],
-    notes: "Chu?n b? tài li?u chi ti?t.",
+    notes: "Chu?n b? tï¿½i li?u chi ti?t.",
   },
   {
     id: 14,
-    title: "T?o báo cáo ti?n ð? d? án",
-    description: "T? ð?ng t?o báo cáo theo th?i gian th?c.",
+    title: "T?o bï¿½o cï¿½o ti?n ï¿½? d? ï¿½n",
+    description: "T? ï¿½?ng t?o bï¿½o cï¿½o theo th?i gian th?c.",
     priority: "Medium",
     status: "In Progress",
     dueDate: "2024-12-19",
     relatedTasks: [],
-    notes: "K?t h?p bi?u ð? Gantt.",
+    notes: "K?t h?p bi?u ï¿½? Gantt.",
   },
   {
     id: 15,
-    title: "Thêm tính nãng nh?p xu?t d? li?u",
+    title: "Thï¿½m tï¿½nh nï¿½ng nh?p xu?t d? li?u",
     description:
-      "Cho phép nh?p và xu?t danh sách công vi?c dý?i d?ng file Excel.",
+      "Cho phï¿½p nh?p vï¿½ xu?t danh sï¿½ch cï¿½ng vi?c dï¿½?i d?ng file Excel.",
     priority: "Medium",
     status: "Not Started",
     dueDate: "2024-12-17",
     relatedTasks: [],
-    notes: "H? tr? ð?nh d?ng CSV và Excel.",
+    notes: "H? tr? ï¿½?nh d?ng CSV vï¿½ Excel.",
   },
   {
     id: 16,
-    title: "C?p nh?t giao di?n ch? ð? t?i",
-    description: "Thêm ch? ð? giao di?n sáng t?i.",
+    title: "C?p nh?t giao di?n ch? ï¿½? t?i",
+    description: "Thï¿½m ch? ï¿½? giao di?n sï¿½ng t?i.",
     priority: "Medium",
     status: "Not Started",
     dueDate: "2024-12-25",
     relatedTasks: [11],
-    notes: "Dùng Material UI ð? h? tr? giao di?n.",
+    notes: "Dï¿½ng Material UI ï¿½? h? tr? giao di?n.",
   },
   {
     id: 17,
-    title: "B?o tr? h? th?ng ð?nh k?",
-    description: "Ki?m tra và s?a l?i h? th?ng hàng tháng.",
+    title: "B?o tr? h? th?ng ï¿½?nh k?",
+    description: "Ki?m tra vï¿½ s?a l?i h? th?ng hï¿½ng thï¿½ng.",
     priority: "Low",
     status: "Completed",
     dueDate: "2024-11-20",
     relatedTasks: [],
-    notes: "Lên l?ch b?o tr? vào cu?i tu?n.",
+    notes: "Lï¿½n l?ch b?o tr? vï¿½o cu?i tu?n.",
   },
   {
     id: 18,
-    title: "Vi?t unit test cho module báo cáo",
-    description: "Ð?m b?o ð? chính xác c?a báo cáo ti?n ð?.",
+    title: "Vi?t unit test cho module bï¿½o cï¿½o",
+    description: "ï¿½?m b?o ï¿½? chï¿½nh xï¿½c c?a bï¿½o cï¿½o ti?n ï¿½?.",
     priority: "High",
     status: "Not Started",
     dueDate: "2024-12-20",
     relatedTasks: [14],
-    notes: "S? d?ng Mocha và Chai.",
+    notes: "S? d?ng Mocha vï¿½ Chai.",
   },
   {
     id: 19,
-    title: "C?i thi?n hi?u nãng truy v?n MongoDB",
-    description: "T?i ýu các câu truy v?n ð? tãng t?c ð?.",
+    title: "C?i thi?n hi?u nï¿½ng truy v?n MongoDB",
+    description: "T?i ï¿½u cï¿½c cï¿½u truy v?n ï¿½? tï¿½ng t?c ï¿½?.",
     priority: "High",
     status: "In Progress",
     dueDate: "2024-12-21",
     relatedTasks: [2],
-    notes: "Thêm index vào các trý?ng quan tr?ng.",
+    notes: "Thï¿½m index vï¿½o cï¿½c trï¿½?ng quan tr?ng.",
   },
   {
     id: 20,
-    title: "T?o giao di?n qu?n l? ngý?i dùng",
-    description: "Cho phép admin qu?n l? danh sách ngý?i dùng.",
+    title: "T?o giao di?n qu?n l? ngï¿½?i dï¿½ng",
+    description: "Cho phï¿½p admin qu?n l? danh sï¿½ch ngï¿½?i dï¿½ng.",
     priority: "Medium",
     status: "Not Started",
     dueDate: "2024-12-27",
     relatedTasks: [12],
-    notes: "Thêm ch?c nãng t?m ki?m và phân trang.",
+    notes: "Thï¿½m ch?c nï¿½ng t?m ki?m vï¿½ phï¿½n trang.",
   },
 ];
 function App() {
-  const [filteredTasks, setFilteredTasks] = useState(tasksBefore); // Danh sách ð? l?c
+  const [filteredTasks, setFilteredTasks] = useState(tasksBefore); // Danh sï¿½ch ï¿½? l?c
   return (
     <Router>
       <Navbar />
+
       <Routes>
-        {/* <Route path="/" element={<Home />} /> */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/profile" element={<UserProfile />} />
-        <Route path="/management" element={<Management />} />
+        {/* Muá»‘n báº­t Login vÃ  Register thÃ¬ Ä‘Ã³ng Navbar vÃ  cÃ¡c Route khÃ¡c rá»“i hÃ£y báº­t lÃªn láº¡i */}
+        {/* <Route path="/" element={<AuthComponent />}/>   */}
+
         <Route path="/notifications" element={<Notifications />} />
+        <Route path="/projects" element={<Management />} />
+        <Route path="/profile" element={<UserProfile />} />
+
         <Route
           path="/"
           element={
@@ -243,7 +246,7 @@ function App() {
           }
         />
         <Route
-          path="/TaskListPage"
+          path="/tasks"
           element={
             <TaskListPage
               filteredTasks={filteredTasks}
@@ -252,7 +255,7 @@ function App() {
           }
         />
         <Route
-          path="/TaskDetailPage"
+          path="/task-details"
           element={
             <TaskDetailPage
             // filteredTasks={filteredTasks}
