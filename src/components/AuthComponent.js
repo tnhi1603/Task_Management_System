@@ -128,23 +128,28 @@ const AuthComponent = () => {
               password: formData.password,
             }
           );
+          const token = response.data.data.token;
+          localStorage.setItem("token", token);
           setSnackbar({
             open: true,
             message: "Login successful!",
             severity: "success",
           });
-          localStorage.setItem("token", response.data.token);
+
           // Chuyển hướng đến Dashboard sau khi login thành công
           setTimeout(() => {
             navigate("/");
-          }, 2000)
+          }, 1000)
         } else {
           // Register API call
-          await axios.post("http://localhost:5000/api/auth/register", {
-            name: formData.name,
-            email: formData.email,
-            password: formData.password,
-          });
+          const response = await axios.post(
+            "http://localhost:5000/api/auth/register",
+            {
+              name: formData.name,
+              email: formData.email,
+              password: formData.password,
+            }
+          );
           setSnackbar({
             open: true,
             message: "Registration successful! You can now login.",

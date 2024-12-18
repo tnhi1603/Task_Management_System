@@ -1,5 +1,6 @@
-import React, { useState, useRef } from "react";
-
+import React, { useState, useRef, useEffect } from "react";
+import {jwtDecode} from 'jwt-decode';
+import axios from "axios";
 import {
   Box,
   Button,
@@ -16,9 +17,8 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
-  Divider,
-  Alert,
   Snackbar,
+  Alert,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { FiEdit, FiLock, FiX, FiUpload } from "react-icons/fi";
@@ -27,8 +27,6 @@ import {
   FaEnvelope,
   FaMapMarkerAlt,
   FaPhone,
-  FaEdit,
-  FaProjectDiagram,
 } from "react-icons/fa";
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -52,7 +50,6 @@ const AvatarOverlay = styled(Box)(({ theme }) => ({
   bottom: 0,
   backgroundColor: "rgba(0, 0, 0, 0.5)",
   display: "flex",
-  flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
   opacity: 0,
@@ -66,52 +63,22 @@ const AvatarOverlay = styled(Box)(({ theme }) => ({
 
 const UserProfile = () => {
   const fileInputRef = useRef(null);
+
   const [profile, setProfile] = useState({
-    name: "John Doe",
-    title: "Senior UX Designer",
-    email: "john.doe@example.com",
-    phone: "+1234567890",
-    location: "San Francisco",
-    avatar: "https://images.unsplash.com/photo-1633332755192-727a05c4013d",
-    company: "TechCorp Solutions",
-    projects: [
-      {
-        id: 1,
-        title: "E-commerce Platform",
-        description:
-          "Built a full-stack e-commerce platform using React and Node.js",
-        image: "https://images.unsplash.com/photo-1661956602116-aa6865609028",
-      },
-      {
-        id: 2,
-        title: "Portfolio Website",
-        description: "Designed and developed a responsive portfolio website",
-        image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
-      },
-      {
-        id: 3,
-        title: "Portfolio Website",
-        description: "Designed and developed a responsive portfolio website",
-        image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
-      },
-      {
-        id: 2,
-        title: "Portfolio Website",
-        description: "Designed and developed a responsive portfolio website",
-        image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
-      },
-      {
-        id: 2,
-        title: "Portfolio Website",
-        description: "Designed and developed a responsive portfolio website",
-        image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
-      },
-    ],
+    name: "",
+    title: "",
+    email: "",
+    phone: "",
+    location: "",
+    avatar: "",
+    company: "",
+    projects: [],
   });
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [snackbar, setSnackbar] = useState({
@@ -120,18 +87,92 @@ const UserProfile = () => {
     severity: "success",
   });
 
-  const handleProfileUpdate = () => {
-    setIsEditMode(false);
-    setSnackbar({
-      open: true,
-      message: "Profile updated successfully!",
-      severity: "success",
-    });
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const decodedToken = jwtDecode(token);
+    const userId = decodedToken.id;
+
+    if (!userId) {
+      console.error("User ID is undefined. Cannot fetch user profile.");
+      setSnackbar({
+        open: true,
+        message: "User ID is missing. Please log in again.",
+        severity: "error",
+      });
+      return;
+    }
+
+    const fetchUserProfile = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/user/${userId}`);
+        const userData = response.data;
+        setProfile({
+          name: userData.name,
+          title: userData.title || " ",
+          email: userData.email,
+          phone: userData.phone || " ",
+          location: userData.location || " ",
+          avatar: userData.avatar || "",
+          company: userData.company || " ",
+          projects: userData.projects || [],
+        });
+      } catch (error) {
+        // console.error("Error fetching user profile:", error);
+        setSnackbar({
+          open: true,
+          message: "Failed to fetch user profile. Please try again later.",
+          severity: "error",
+        });
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
+  const handleProfileUpdate = async () => {
+    const token = localStorage.getItem("token");
+    const decodedToken = jwtDecode(token);
+    const userId = decodedToken.id;
+
+    try {
+      await axios.put(`http://localhost:5000/api/user/${userId}/update`, profile);
+      setIsEditMode(false);
+      setSnackbar({
+        open: true,
+        message: "Profile updated successfully!",
+        severity: "success",
+      });
+    } catch (error) {
+      // console.error("Error updating profile:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to update profile. Please try again later.",
+        severity: "error",
+      });
+    }
   };
 
-  const handlePasswordChange = () => {
-    if (newPassword === confirmPassword) {
+  const handlePasswordChange = async () => {
+    if (newPassword !== confirmPassword) {
+      setSnackbar({
+        open: true,
+        message: "Passwords do not match!",
+        severity: "error",
+      });
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    const decodedToken = jwtDecode(token);
+    const userId = decodedToken.id;
+
+    try {
+      await axios.put(`http://localhost:5000/api/user/${userId}/changepassword`, {
+        oldPassword,
+        newPassword,
+      });
       setIsPasswordDialogOpen(false);
+      setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
       setSnackbar({
@@ -139,35 +180,58 @@ const UserProfile = () => {
         message: "Password updated successfully!",
         severity: "success",
       });
-    } else {
+    } catch (error) {
+      // console.error("Error updating password:", error);
       setSnackbar({
         open: true,
-        message: "Passwords do not match!",
+        message: "Failed to update password. Please try again later.",
         severity: "error",
       });
     }
   };
-  const handleAvatarClick = () => {
-    setIsImageDialogOpen(true);
-  };
-  const handleFileSelect = (event) => {
+
+  const handleFileSelect = async (event) => {
     const file = event.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setProfile({ ...profile, avatar: e.target.result });
+      const formData = new FormData();
+      formData.append("avatar", file);
+
+      const token = localStorage.getItem("token");
+      const decodedToken = jwtDecode(token);
+      const userId = decodedToken.id;
+
+      try {
+        const response = await axios.put(
+          `http://localhost:5000/api/user/${userId}/update-avatar`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        setProfile({ ...profile, avatar: response.data.avatar });
         setSnackbar({
           open: true,
           message: "Profile picture updated successfully!",
           severity: "success",
         });
-      };
-      reader.readAsDataURL(file);
+      } catch (error) {
+        console.error("Error updating avatar:", error);
+        setSnackbar({
+          open: true,
+          message: "Failed to update avatar. Please try again later.",
+          severity: "error",
+        });
+      }
     }
   };
   const handleLocalUpload = () => {
     fileInputRef.current.click();
     setIsImageDialogOpen(false);
+  };
+  const handleAvatarClick = () => {
+    fileInputRef.current.click();
   };
 
   return (
@@ -204,7 +268,6 @@ const UserProfile = () => {
                 style={{ display: "none" }}
                 onChange={handleFileSelect}
               />
-
               <IconButton
                 sx={{ position: "absolute", right: 0, top: 0 }}
                 onClick={() => setIsEditMode(!isEditMode)}
@@ -214,7 +277,7 @@ const UserProfile = () => {
             </Box>
 
             {isEditMode ? (
-              <Box component="form" sx={{ mt: 2 }}>
+              <Box component="form">
                 <TextField
                   fullWidth
                   label="Name"
@@ -229,7 +292,7 @@ const UserProfile = () => {
                   label="Title"
                   value={profile.title}
                   onChange={(e) =>
-                    setProfile({ ...profile, phone: e.target.value })
+                    setProfile({ ...profile, title: e.target.value })
                   }
                   margin="normal"
                 />
@@ -238,7 +301,7 @@ const UserProfile = () => {
                   label="Company"
                   value={profile.company}
                   onChange={(e) =>
-                    setProfile({ ...profile, phone: e.target.value })
+                    setProfile({ ...profile, company: e.target.value })
                   }
                   margin="normal"
                 />
@@ -265,7 +328,7 @@ const UserProfile = () => {
                   label="Location"
                   value={profile.location}
                   onChange={(e) =>
-                    setProfile({ ...profile, phone: e.target.value })
+                    setProfile({ ...profile, location: e.target.value })
                   }
                   margin="normal"
                 />
@@ -396,6 +459,14 @@ const UserProfile = () => {
         </DialogTitle>
         <DialogContent>
           <TextField
+              fullWidth
+              label="Old Password"
+              type="password"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              margin="normal"
+          />
+          <TextField
             fullWidth
             type="password"
             label="New Password"
@@ -446,7 +517,7 @@ const UserProfile = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Snackbar for notifications */}
+      {/* Snackbar Notifications */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
