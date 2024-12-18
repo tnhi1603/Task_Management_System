@@ -78,6 +78,7 @@ const UserProfile = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [snackbar, setSnackbar] = useState({
@@ -116,7 +117,7 @@ const UserProfile = () => {
           projects: userData.projects || [],
         });
       } catch (error) {
-        console.error("Error fetching user profile:", error);
+        // console.error("Error fetching user profile:", error);
         setSnackbar({
           open: true,
           message: "Failed to fetch user profile. Please try again later.",
@@ -128,18 +129,50 @@ const UserProfile = () => {
     fetchUserProfile();
   }, []);
 
-  const handleProfileUpdate = () => {
-    setIsEditMode(false);
-    setSnackbar({
-      open: true,
-      message: "Profile updated successfully!",
-      severity: "success",
-    });
+  const handleProfileUpdate = async () => {
+    const token = localStorage.getItem("token");
+    const decodedToken = jwtDecode(token);
+    const userId = decodedToken.id;
+
+    try {
+      await axios.put(`http://localhost:5000/api/user/${userId}/update`, profile);
+      setIsEditMode(false);
+      setSnackbar({
+        open: true,
+        message: "Profile updated successfully!",
+        severity: "success",
+      });
+    } catch (error) {
+      // console.error("Error updating profile:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to update profile. Please try again later.",
+        severity: "error",
+      });
+    }
   };
 
-  const handlePasswordChange = () => {
-    if (newPassword === confirmPassword) {
+  const handlePasswordChange = async () => {
+    if (newPassword !== confirmPassword) {
+      setSnackbar({
+        open: true,
+        message: "Passwords do not match!",
+        severity: "error",
+      });
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    const decodedToken = jwtDecode(token);
+    const userId = decodedToken.id;
+
+    try {
+      await axios.put(`http://localhost:5000/api/user/${userId}/changepassword`, {
+        oldPassword,
+        newPassword,
+      });
       setIsPasswordDialogOpen(false);
+      setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
       setSnackbar({
@@ -147,28 +180,50 @@ const UserProfile = () => {
         message: "Password updated successfully!",
         severity: "success",
       });
-    } else {
+    } catch (error) {
+      // console.error("Error updating password:", error);
       setSnackbar({
         open: true,
-        message: "Passwords do not match!",
+        message: "Failed to update password. Please try again later.",
         severity: "error",
       });
     }
   };
 
-  const handleFileSelect = (event) => {
+  const handleFileSelect = async (event) => {
     const file = event.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setProfile({ ...profile, avatar: e.target.result });
+      const formData = new FormData();
+      formData.append("avatar", file);
+
+      const token = localStorage.getItem("token");
+      const decodedToken = jwtDecode(token);
+      const userId = decodedToken.id;
+
+      try {
+        const response = await axios.put(
+          `http://localhost:5000/api/user/${userId}/update-avatar`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        setProfile({ ...profile, avatar: response.data.avatar });
         setSnackbar({
           open: true,
           message: "Profile picture updated successfully!",
           severity: "success",
         });
-      };
-      reader.readAsDataURL(file);
+      } catch (error) {
+        console.error("Error updating avatar:", error);
+        setSnackbar({
+          open: true,
+          message: "Failed to update avatar. Please try again later.",
+          severity: "error",
+        });
+      }
     }
   };
   const handleLocalUpload = () => {
@@ -237,7 +292,7 @@ const UserProfile = () => {
                   label="Title"
                   value={profile.title}
                   onChange={(e) =>
-                    setProfile({ ...profile, phone: e.target.value })
+                    setProfile({ ...profile, title: e.target.value })
                   }
                   margin="normal"
                 />
@@ -246,7 +301,7 @@ const UserProfile = () => {
                   label="Company"
                   value={profile.company}
                   onChange={(e) =>
-                    setProfile({ ...profile, phone: e.target.value })
+                    setProfile({ ...profile, company: e.target.value })
                   }
                   margin="normal"
                 />
@@ -273,7 +328,7 @@ const UserProfile = () => {
                   label="Location"
                   value={profile.location}
                   onChange={(e) =>
-                    setProfile({ ...profile, phone: e.target.value })
+                    setProfile({ ...profile, location: e.target.value })
                   }
                   margin="normal"
                 />
@@ -403,6 +458,14 @@ const UserProfile = () => {
           </IconButton>
         </DialogTitle>
         <DialogContent>
+          <TextField
+              fullWidth
+              label="Old Password"
+              type="password"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              margin="normal"
+          />
           <TextField
             fullWidth
             type="password"
