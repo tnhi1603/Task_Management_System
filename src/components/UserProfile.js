@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios"; // Import axios
 import {
   Box,
   Button,
@@ -16,9 +16,8 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
-  Divider,
-  Alert,
   Snackbar,
+  Alert,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { FiEdit, FiLock, FiX, FiUpload } from "react-icons/fi";
@@ -27,8 +26,6 @@ import {
   FaEnvelope,
   FaMapMarkerAlt,
   FaPhone,
-  FaEdit,
-  FaProjectDiagram,
 } from "react-icons/fa";
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -40,10 +37,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
     transform: "translateY(-5px)",
   },
 }));
-const InfoContainer = styled(Box)(({ theme }) => ({
-  textAlign: "center",
-  transition: "opacity 0.3s ease",
-}));
+
 const AvatarOverlay = styled(Box)(({ theme }) => ({
   position: "absolute",
   top: 0,
@@ -52,7 +46,6 @@ const AvatarOverlay = styled(Box)(({ theme }) => ({
   bottom: 0,
   backgroundColor: "rgba(0, 0, 0, 0.5)",
   display: "flex",
-  flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
   opacity: 0,
@@ -64,61 +57,57 @@ const AvatarOverlay = styled(Box)(({ theme }) => ({
   },
 }));
 
-const UserProfile = () => {
+const UserProfile = ({ userId }) => {
   const fileInputRef = useRef(null);
+
   const [profile, setProfile] = useState({
-    name: "John Doe",
-    title: "Senior UX Designer",
-    email: "john.doe@example.com",
-    phone: "+1234567890",
-    location: "San Francisco",
-    avatar: "https://images.unsplash.com/photo-1633332755192-727a05c4013d",
-    company: "TechCorp Solutions",
-    projects: [
-      {
-        id: 1,
-        title: "E-commerce Platform",
-        description:
-          "Built a full-stack e-commerce platform using React and Node.js",
-        image: "https://images.unsplash.com/photo-1661956602116-aa6865609028",
-      },
-      {
-        id: 2,
-        title: "Portfolio Website",
-        description: "Designed and developed a responsive portfolio website",
-        image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
-      },
-      {
-        id: 3,
-        title: "Portfolio Website",
-        description: "Designed and developed a responsive portfolio website",
-        image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
-      },
-      {
-        id: 2,
-        title: "Portfolio Website",
-        description: "Designed and developed a responsive portfolio website",
-        image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
-      },
-      {
-        id: 2,
-        title: "Portfolio Website",
-        description: "Designed and developed a responsive portfolio website",
-        image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
-      },
-    ],
+    name: "",
+    title: "",
+    email: "",
+    phone: "",
+    location: "",
+    avatar: "",
+    company: "",
+    projects: [],
   });
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success",
   });
+
+  useEffect(() => {
+    // Fetch user data from API
+    const fetchUserProfile = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/user/${userId}`);
+        const userData = response.data;
+        setProfile({
+          name: userData.name,
+          title: userData.title || "N/A",
+          email: userData.email,
+          phone: userData.phone || "N/A",
+          location: userData.location || "N/A",
+          avatar: userData.avatar || "",
+          company: userData.company || "N/A",
+          projects: userData.projects || [],
+        });
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        setSnackbar({
+          open: true,
+          message: "Failed to fetch user profile. Please try again later.",
+          severity: "error",
+        });
+      }
+    };
+
+    fetchUserProfile();
+  }, [userId]); // Run effect whenever `userId` changes
 
   const handleProfileUpdate = () => {
     setIsEditMode(false);
@@ -129,27 +118,6 @@ const UserProfile = () => {
     });
   };
 
-  const handlePasswordChange = () => {
-    if (newPassword === confirmPassword) {
-      setIsPasswordDialogOpen(false);
-      setNewPassword("");
-      setConfirmPassword("");
-      setSnackbar({
-        open: true,
-        message: "Password updated successfully!",
-        severity: "success",
-      });
-    } else {
-      setSnackbar({
-        open: true,
-        message: "Passwords do not match!",
-        severity: "error",
-      });
-    }
-  };
-  const handleAvatarClick = () => {
-    setIsImageDialogOpen(true);
-  };
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -165,9 +133,9 @@ const UserProfile = () => {
       reader.readAsDataURL(file);
     }
   };
-  const handleLocalUpload = () => {
+
+  const handleAvatarClick = () => {
     fileInputRef.current.click();
-    setIsImageDialogOpen(false);
   };
 
   return (
@@ -204,147 +172,31 @@ const UserProfile = () => {
                 style={{ display: "none" }}
                 onChange={handleFileSelect}
               />
-
-              <IconButton
-                sx={{ position: "absolute", right: 0, top: 0 }}
-                onClick={() => setIsEditMode(!isEditMode)}
-              >
-                <FiEdit />
-              </IconButton>
             </Box>
 
             {isEditMode ? (
-              <Box component="form" sx={{ mt: 2 }}>
+              <Box component="form">
                 <TextField
                   fullWidth
                   label="Name"
                   value={profile.name}
-                  onChange={(e) =>
-                    setProfile({ ...profile, name: e.target.value })
-                  }
-                  margin="normal"
-                />
-                <TextField
-                  fullWidth
-                  label="Title"
-                  value={profile.title}
-                  onChange={(e) =>
-                    setProfile({ ...profile, phone: e.target.value })
-                  }
-                  margin="normal"
-                />
-                <TextField
-                  fullWidth
-                  label="Company"
-                  value={profile.company}
-                  onChange={(e) =>
-                    setProfile({ ...profile, phone: e.target.value })
-                  }
-                  margin="normal"
-                />
-                <TextField
-                  fullWidth
-                  label="Email"
-                  value={profile.email}
-                  onChange={(e) =>
-                    setProfile({ ...profile, email: e.target.value })
-                  }
-                  margin="normal"
-                />
-                <TextField
-                  fullWidth
-                  label="Phone"
-                  value={profile.phone}
-                  onChange={(e) =>
-                    setProfile({ ...profile, phone: e.target.value })
-                  }
-                  margin="normal"
-                />
-                <TextField
-                  fullWidth
-                  label="Location"
-                  value={profile.location}
-                  onChange={(e) =>
-                    setProfile({ ...profile, phone: e.target.value })
-                  }
                   margin="normal"
                 />
                 <Button
-                  fullWidth
                   variant="contained"
                   onClick={handleProfileUpdate}
-                  sx={{ mt: 2 }}
+                  fullWidth
                 >
                   Save Changes
                 </Button>
               </Box>
             ) : (
-              <Box>
-                <InfoContainer>
-                  <div style={{ marginBottom: "2rem" }}>
-                    <h2>{profile.name}</h2>
-                  </div>
-                  <div
-                    style={{
-                      color: "rgba(0, 0, 0, 0.6)",
-                      fontWeight: "bold",
-                      marginBottom: "1.5rem",
-                    }}
-                  >
-                    {profile.title}
-                  </div>
-
-                  <div
-                    style={{
-                      color: "rgba(0, 0, 0, 0.6)",
-                      fontWeight: "bold",
-                      marginBottom: "1.5rem",
-                    }}
-                  >
-                    <FaBriefcase />
-                    &nbsp;&nbsp; {profile.company}
-                  </div>
-
-                  <div
-                    style={{
-                      color: "rgba(0, 0, 0, 0.6)",
-                      fontWeight: "bold",
-                      marginBottom: "1.5rem",
-                    }}
-                  >
-                    <FaEnvelope />
-                    &nbsp;&nbsp;{profile.email}
-                  </div>
-                  <div
-                    style={{
-                      color: "rgba(0, 0, 0, 0.6)",
-                      fontWeight: "bold",
-                      marginBottom: "1.5rem",
-                    }}
-                  >
-                    <FaPhone />
-                    &nbsp;&nbsp;{profile.phone}
-                  </div>
-                  <div
-                    style={{
-                      color: "rgba(0, 0, 0, 0.6)",
-                      fontWeight: "bold",
-                      marginBottom: "13rem",
-                    }}
-                  >
-                    <FaMapMarkerAlt />
-                    &nbsp;&nbsp;{profile.location}
-                  </div>
-                </InfoContainer>
-                <Button
-                  startIcon={<FiLock />}
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => setIsPasswordDialogOpen(true)}
-                  sx={{ mt: 2 }}
-                >
-                  Change Password
-                </Button>
+              <Box textAlign="center">
+                <Typography variant="h5">{profile.name}</Typography>
+                <Typography color="textSecondary">{profile.title}</Typography>
+                <Typography color="textSecondary">{profile.company}</Typography>
+                <Typography color="textSecondary">{profile.email}</Typography>
+                <Typography color="textSecondary">{profile.phone}</Typography>
               </Box>
             )}
           </Card>
@@ -356,8 +208,8 @@ const UserProfile = () => {
             My Projects
           </Typography>
           <Grid container spacing={3}>
-            {profile.projects.map((project) => (
-              <Grid item xs={12} sm={6} key={project.id}>
+            {profile.projects.map((project, index) => (
+              <Grid item xs={12} sm={6} key={index}>
                 <StyledCard>
                   <CardMedia
                     component="img"
@@ -366,12 +218,8 @@ const UserProfile = () => {
                     alt={project.title}
                   />
                   <CardContent>
-                    <Typography variant="h6" gutterBottom>
-                      {project.title}
-                    </Typography>
-                    <Typography color="textSecondary">
-                      {project.description}
-                    </Typography>
+                    <Typography variant="h6">{project.title}</Typography>
+                    <Typography>{project.description}</Typography>
                   </CardContent>
                 </StyledCard>
               </Grid>
@@ -380,73 +228,7 @@ const UserProfile = () => {
         </Grid>
       </Grid>
 
-      {/* Password Change Dialog */}
-      <Dialog
-        open={isPasswordDialogOpen}
-        onClose={() => setIsPasswordDialogOpen(false)}
-      >
-        <DialogTitle>
-          Change Password
-          <IconButton
-            sx={{ position: "absolute", right: 8, top: 8 }}
-            onClick={() => setIsPasswordDialogOpen(false)}
-          >
-            <FiX />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            type="password"
-            label="New Password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            type="password"
-            label="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            margin="normal"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setIsPasswordDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handlePasswordChange} variant="contained">
-            Update Password
-          </Button>
-        </DialogActions>
-      </Dialog>
-      {/* Image Upload Dialog */}
-      <Dialog
-        open={isImageDialogOpen}
-        onClose={() => setIsImageDialogOpen(false)}
-      >
-        <DialogTitle>
-          Upload Profile Picture
-          <IconButton
-            sx={{ position: "absolute", right: 8, top: 8 }}
-            onClick={() => setIsImageDialogOpen(false)}
-          >
-            <FiX />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <Button
-            fullWidth
-            variant="outlined"
-            startIcon={<FiUpload />}
-            onClick={handleLocalUpload}
-            sx={{ mb: 2 }}
-          >
-            Upload from Device
-          </Button>
-        </DialogContent>
-      </Dialog>
-
-      {/* Snackbar for notifications */}
+      {/* Snackbar Notifications */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}

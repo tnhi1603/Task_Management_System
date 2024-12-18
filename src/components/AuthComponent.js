@@ -133,7 +133,11 @@ const AuthComponent = () => {
             message: "Login successful!",
             severity: "success",
           });
-          localStorage.setItem("token", response.data.token);
+
+          const { token, userId } = response.data;
+
+          localStorage.setItem("token", token);
+          localStorage.setItem("userId", userId);
           // Chuyển hướng đến Dashboard sau khi login thành công
           setTimeout(() => {
             navigate("/");
