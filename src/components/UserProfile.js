@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import axios from "axios"; // Import axios
+import {jwtDecode} from 'jwt-decode';
+import axios from "axios";
 import {
   Box,
   Button,
@@ -37,7 +38,10 @@ const StyledCard = styled(Card)(({ theme }) => ({
     transform: "translateY(-5px)",
   },
 }));
-
+const InfoContainer = styled(Box)(({ theme }) => ({
+  textAlign: "center",
+  transition: "opacity 0.3s ease",
+}));
 const AvatarOverlay = styled(Box)(({ theme }) => ({
   position: "absolute",
   top: 0,
@@ -57,7 +61,7 @@ const AvatarOverlay = styled(Box)(({ theme }) => ({
   },
 }));
 
-const UserProfile = ({ userId }) => {
+const UserProfile = () => {
   const fileInputRef = useRef(null);
 
   const [profile, setProfile] = useState({
@@ -74,6 +78,8 @@ const UserProfile = ({ userId }) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -81,19 +87,32 @@ const UserProfile = ({ userId }) => {
   });
 
   useEffect(() => {
-    // Fetch user data from API
+    const token = localStorage.getItem("token");
+    const decodedToken = jwtDecode(token);
+    const userId = decodedToken.id;
+
+    if (!userId) {
+      console.error("User ID is undefined. Cannot fetch user profile.");
+      setSnackbar({
+        open: true,
+        message: "User ID is missing. Please log in again.",
+        severity: "error",
+      });
+      return;
+    }
+
     const fetchUserProfile = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/api/user/${userId}`);
         const userData = response.data;
         setProfile({
           name: userData.name,
-          title: userData.title || "N/A",
+          title: userData.title || " ",
           email: userData.email,
-          phone: userData.phone || "N/A",
-          location: userData.location || "N/A",
+          phone: userData.phone || " ",
+          location: userData.location || " ",
           avatar: userData.avatar || "",
-          company: userData.company || "N/A",
+          company: userData.company || " ",
           projects: userData.projects || [],
         });
       } catch (error) {
@@ -107,7 +126,7 @@ const UserProfile = ({ userId }) => {
     };
 
     fetchUserProfile();
-  }, [userId]); // Run effect whenever `userId` changes
+  }, []);
 
   const handleProfileUpdate = () => {
     setIsEditMode(false);
@@ -116,6 +135,25 @@ const UserProfile = ({ userId }) => {
       message: "Profile updated successfully!",
       severity: "success",
     });
+  };
+
+  const handlePasswordChange = () => {
+    if (newPassword === confirmPassword) {
+      setIsPasswordDialogOpen(false);
+      setNewPassword("");
+      setConfirmPassword("");
+      setSnackbar({
+        open: true,
+        message: "Password updated successfully!",
+        severity: "success",
+      });
+    } else {
+      setSnackbar({
+        open: true,
+        message: "Passwords do not match!",
+        severity: "error",
+      });
+    }
   };
 
   const handleFileSelect = (event) => {
@@ -133,7 +171,10 @@ const UserProfile = ({ userId }) => {
       reader.readAsDataURL(file);
     }
   };
-
+  const handleLocalUpload = () => {
+    fileInputRef.current.click();
+    setIsImageDialogOpen(false);
+  };
   const handleAvatarClick = () => {
     fileInputRef.current.click();
   };
@@ -172,6 +213,12 @@ const UserProfile = ({ userId }) => {
                 style={{ display: "none" }}
                 onChange={handleFileSelect}
               />
+              <IconButton
+                sx={{ position: "absolute", right: 0, top: 0 }}
+                onClick={() => setIsEditMode(!isEditMode)}
+              >
+                <FiEdit />
+              </IconButton>
             </Box>
 
             {isEditMode ? (
@@ -180,23 +227,132 @@ const UserProfile = ({ userId }) => {
                   fullWidth
                   label="Name"
                   value={profile.name}
+                  onChange={(e) =>
+                    setProfile({ ...profile, name: e.target.value })
+                  }
+                  margin="normal"
+                />
+                <TextField
+                  fullWidth
+                  label="Title"
+                  value={profile.title}
+                  onChange={(e) =>
+                    setProfile({ ...profile, phone: e.target.value })
+                  }
+                  margin="normal"
+                />
+                <TextField
+                  fullWidth
+                  label="Company"
+                  value={profile.company}
+                  onChange={(e) =>
+                    setProfile({ ...profile, phone: e.target.value })
+                  }
+                  margin="normal"
+                />
+                <TextField
+                  fullWidth
+                  label="Email"
+                  value={profile.email}
+                  onChange={(e) =>
+                    setProfile({ ...profile, email: e.target.value })
+                  }
+                  margin="normal"
+                />
+                <TextField
+                  fullWidth
+                  label="Phone"
+                  value={profile.phone}
+                  onChange={(e) =>
+                    setProfile({ ...profile, phone: e.target.value })
+                  }
+                  margin="normal"
+                />
+                <TextField
+                  fullWidth
+                  label="Location"
+                  value={profile.location}
+                  onChange={(e) =>
+                    setProfile({ ...profile, phone: e.target.value })
+                  }
                   margin="normal"
                 />
                 <Button
+                  fullWidth
                   variant="contained"
                   onClick={handleProfileUpdate}
-                  fullWidth
+                  sx={{ mt: 2 }}
                 >
                   Save Changes
                 </Button>
               </Box>
             ) : (
-              <Box textAlign="center">
-                <Typography variant="h5">{profile.name}</Typography>
-                <Typography color="textSecondary">{profile.title}</Typography>
-                <Typography color="textSecondary">{profile.company}</Typography>
-                <Typography color="textSecondary">{profile.email}</Typography>
-                <Typography color="textSecondary">{profile.phone}</Typography>
+              <Box>
+                <InfoContainer>
+                  <div style={{ marginBottom: "2rem" }}>
+                    <h2>{profile.name}</h2>
+                  </div>
+                  <div
+                    style={{
+                      color: "rgba(0, 0, 0, 0.6)",
+                      fontWeight: "bold",
+                      marginBottom: "1.5rem",
+                    }}
+                  >
+                    {profile.title}
+                  </div>
+
+                  <div
+                    style={{
+                      color: "rgba(0, 0, 0, 0.6)",
+                      fontWeight: "bold",
+                      marginBottom: "1.5rem",
+                    }}
+                  >
+                    <FaBriefcase />
+                    &nbsp;&nbsp; {profile.company}
+                  </div>
+
+                  <div
+                    style={{
+                      color: "rgba(0, 0, 0, 0.6)",
+                      fontWeight: "bold",
+                      marginBottom: "1.5rem",
+                    }}
+                  >
+                    <FaEnvelope />
+                    &nbsp;&nbsp;{profile.email}
+                  </div>
+                  <div
+                    style={{
+                      color: "rgba(0, 0, 0, 0.6)",
+                      fontWeight: "bold",
+                      marginBottom: "1.5rem",
+                    }}
+                  >
+                    <FaPhone />
+                    &nbsp;&nbsp;{profile.phone}
+                  </div>
+                  <div
+                    style={{
+                      color: "rgba(0, 0, 0, 0.6)",
+                      fontWeight: "bold",
+                      marginBottom: "13rem",
+                    }}
+                  >
+                    <FaMapMarkerAlt />
+                    &nbsp;&nbsp;{profile.location}
+                  </div>
+                </InfoContainer>
+                <Button
+                  startIcon={<FiLock />}
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => setIsPasswordDialogOpen(true)}
+                  sx={{ mt: 2 }}
+                >
+                  Change Password
+                </Button>
               </Box>
             )}
           </Card>
@@ -208,8 +364,8 @@ const UserProfile = ({ userId }) => {
             My Projects
           </Typography>
           <Grid container spacing={3}>
-            {profile.projects.map((project, index) => (
-              <Grid item xs={12} sm={6} key={index}>
+            {profile.projects.map((project) => (
+              <Grid item xs={12} sm={6} key={project.id}>
                 <StyledCard>
                   <CardMedia
                     component="img"
@@ -218,8 +374,12 @@ const UserProfile = ({ userId }) => {
                     alt={project.title}
                   />
                   <CardContent>
-                    <Typography variant="h6">{project.title}</Typography>
-                    <Typography>{project.description}</Typography>
+                    <Typography variant="h6" gutterBottom>
+                      {project.title}
+                    </Typography>
+                    <Typography color="textSecondary">
+                      {project.description}
+                    </Typography>
                   </CardContent>
                 </StyledCard>
               </Grid>
@@ -227,6 +387,72 @@ const UserProfile = ({ userId }) => {
           </Grid>
         </Grid>
       </Grid>
+
+      {/* Password Change Dialog */}
+      <Dialog
+        open={isPasswordDialogOpen}
+        onClose={() => setIsPasswordDialogOpen(false)}
+      >
+        <DialogTitle>
+          Change Password
+          <IconButton
+            sx={{ position: "absolute", right: 8, top: 8 }}
+            onClick={() => setIsPasswordDialogOpen(false)}
+          >
+            <FiX />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            type="password"
+            label="New Password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            margin="normal"
+          />
+          <TextField
+            fullWidth
+            type="password"
+            label="Confirm Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            margin="normal"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsPasswordDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handlePasswordChange} variant="contained">
+            Update Password
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Image Upload Dialog */}
+      <Dialog
+        open={isImageDialogOpen}
+        onClose={() => setIsImageDialogOpen(false)}
+      >
+        <DialogTitle>
+          Upload Profile Picture
+          <IconButton
+            sx={{ position: "absolute", right: 8, top: 8 }}
+            onClick={() => setIsImageDialogOpen(false)}
+          >
+            <FiX />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Button
+            fullWidth
+            variant="outlined"
+            startIcon={<FiUpload />}
+            onClick={handleLocalUpload}
+            sx={{ mb: 2 }}
+          >
+            Upload from Device
+          </Button>
+        </DialogContent>
+      </Dialog>
 
       {/* Snackbar Notifications */}
       <Snackbar
