@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import {
   Box,
@@ -104,7 +104,9 @@ const UserProfile = () => {
 
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/user/${userId}`);
+        const response = await axios.get(
+          `http://localhost:5000/api/user/${userId}`
+        );
         const userData = response.data;
         setProfile({
           name: userData.name,
@@ -135,7 +137,11 @@ const UserProfile = () => {
     const userId = decodedToken.id;
 
     try {
-      await axios.put(`http://localhost:5000/api/user/${userId}/update`, profile);
+      // await axios.put(`http://localhost:5000/api/user/${userId}/update`, profile);
+      await axios.put(
+        `http://localhost:5001/api/user/${userId}/update`,
+        profile
+      );
       setIsEditMode(false);
       setSnackbar({
         open: true,
@@ -167,10 +173,14 @@ const UserProfile = () => {
     const userId = decodedToken.id;
 
     try {
-      await axios.put(`http://localhost:5000/api/user/${userId}/changepassword`, {
-        oldPassword,
-        newPassword,
-      });
+      // await axios.put(`http://localhost:5000/api/user/${userId}/changepassword`, {
+      await axios.put(
+        `http://localhost:5001/api/user/${userId}/changepassword`,
+        {
+          oldPassword,
+          newPassword,
+        }
+      );
       setIsPasswordDialogOpen(false);
       setOldPassword("");
       setNewPassword("");
@@ -202,7 +212,8 @@ const UserProfile = () => {
 
       try {
         const response = await axios.put(
-          `http://localhost:5000/api/user/${userId}/update-avatar`,
+          // `http://localhost:5000/api/user/${userId}/update-avatar`,
+          `http://localhost:5001/api/user/${userId}/update-avatar`,
           formData,
           {
             headers: {
@@ -459,12 +470,12 @@ const UserProfile = () => {
         </DialogTitle>
         <DialogContent>
           <TextField
-              fullWidth
-              label="Old Password"
-              type="password"
-              value={oldPassword}
-              onChange={(e) => setOldPassword(e.target.value)}
-              margin="normal"
+            fullWidth
+            label="Old Password"
+            type="password"
+            value={oldPassword}
+            onChange={(e) => setOldPassword(e.target.value)}
+            margin="normal"
           />
           <TextField
             fullWidth
