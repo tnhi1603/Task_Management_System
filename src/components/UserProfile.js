@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import {jwtDecode} from 'jwt-decode';
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -63,7 +64,7 @@ const AvatarOverlay = styled(Box)(({ theme }) => ({
 
 const UserProfile = () => {
   const fileInputRef = useRef(null);
-
+  const navigate = useNavigate();
   const [profile, setProfile] = useState({
     name: "",
     title: "",
@@ -89,6 +90,11 @@ const UserProfile = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    if (!token) {
+      // Chuyển hướng đến /login nếu chưa đăng nhập
+      navigate("/login");
+      return;
+    }
     const decodedToken = jwtDecode(token);
     const userId = decodedToken.id;
 
@@ -127,7 +133,7 @@ const UserProfile = () => {
     };
 
     fetchUserProfile();
-  }, []);
+  }, [navigate]);
 
   const handleProfileUpdate = async () => {
     const token = localStorage.getItem("token");
@@ -202,7 +208,7 @@ const UserProfile = () => {
 
       try {
         const response = await axios.put(
-          `http://localhost:5000/api/user/${userId}/update-avatar`,
+          `http://localhost:5000/api/user/${userId}/avatar`,
           formData,
           {
             headers: {
@@ -233,6 +239,16 @@ const UserProfile = () => {
   const handleAvatarClick = () => {
     fileInputRef.current.click();
   };
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Xóa token
+    navigate("/login", { replace: true }); // Chuyển hướng đến trang đăng nhập
+    setSnackbar({
+      open: true,
+      message: "You have successfully logged out.",
+      severity: "success",
+    });
+  };
+  
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -250,7 +266,7 @@ const UserProfile = () => {
                 }}
               >
                 <Avatar
-                  src={profile.avatar}
+                  src={`${profile.avatar}?t=${new Date().getTime()}`}
                   alt={profile.name}
                   sx={{ width: "100%", height: "100%" }}
                 />
@@ -407,6 +423,15 @@ const UserProfile = () => {
                   sx={{ mt: 2 }}
                 >
                   Change Password
+                </Button>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  color="error"
+                  onClick={handleLogout}
+                  sx={{ mt: 2 }}
+                >
+                  Log Out
                 </Button>
               </Box>
             )}
