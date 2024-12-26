@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Box,
   Typography,
@@ -29,69 +30,102 @@ const StyledCard = styled(Card)(({ theme }) => ({
 }));
 
 const Notifications = () => {
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: "new_task",
-      title: "New Project Assignment",
-      description: "You have been assigned to the new AI Development project",
-      timestamp: "2024-01-20T10:30:00",
-      read: false,
-    },
-    {
-      id: 2,
-      type: "task_update",
-      title: "Task Status Updated",
-      description:
-        "Website redesign project status has been updated to 'In Progress'",
-      timestamp: "2024-01-20T09:15:00",
-      read: true,
-    },
-    {
-      id: 3,
-      type: "deadline",
-      title: "Upcoming Deadline",
-      description: "Mobile App Development project deadline is approaching",
-      timestamp: "2024-01-20T08:45:00",
-      read: false,
-    },
-    {
-      id: 4,
-      type: "expired_deadline",
-      title: "Deadline Expired",
-      description: "The deadline for the UI/UX Design project has expired",
-      timestamp: "2024-01-19T23:59:59",
-      read: false,
-    },
-    {
-      id: 5,
-      type: "deadline",
-      title: "Upcoming Deadline",
-      description: "Mobile App Development project deadline is approaching",
-      timestamp: "2024-01-20T08:45:00",
-      read: false,
-    },
-    {
-      id: 6,
-      type: "deadline",
-      title: "Upcoming Deadline",
-      description: "Mobile App Development project deadline is approaching",
-      timestamp: "2024-01-20T08:45:00",
-      read: false,
-    },
-    {
-      id: 7,
-      type: "deadline",
-      title: "Upcoming Deadline",
-      description: "Mobile App Development project deadline is approaching",
-      timestamp: "2024-01-20T08:45:00",
-      read: false,
-    },
-  ]);
+  // const [notifications, setNotifications] = useState([
+  //   {
+  //     id: 1,
+  //     type: "new_task",
+  //     title: "New Project Assignment",
+  //     description: "You have been assigned to the new AI Development project",
+  //     timestamp: "2024-01-20T10:30:00",
+  //     read: false,
+  //   },
+  //   {
+  //     id: 2,
+  //     type: "task_update",
+  //     title: "Task Status Updated",
+  //     description:
+  //       "Website redesign project status has been updated to 'In Progress'",
+  //     timestamp: "2024-01-20T09:15:00",
+  //     read: true,
+  //   },
+  //   {
+  //     id: 3,
+  //     type: "deadline",
+  //     title: "Upcoming Deadline",
+  //     description: "Mobile App Development project deadline is approaching",
+  //     timestamp: "2024-01-20T08:45:00",
+  //     read: false,
+  //   },
+  //   {
+  //     id: 4,
+  //     type: "expired_deadline",
+  //     title: "Deadline Expired",
+  //     description: "The deadline for the UI/UX Design project has expired",
+  //     timestamp: "2024-01-19T23:59:59",
+  //     read: false,
+  //   },
+  //   {
+  //     id: 5,
+  //     type: "deadline",
+  //     title: "Upcoming Deadline",
+  //     description: "Mobile App Development project deadline is approaching",
+  //     timestamp: "2024-01-20T08:45:00",
+  //     read: false,
+  //   },
+  //   {
+  //     id: 6,
+  //     type: "deadline",
+  //     title: "Upcoming Deadline",
+  //     description: "Mobile App Development project deadline is approaching",
+  //     timestamp: "2024-01-20T08:45:00",
+  //     read: false,
+  //   },
+  //   {
+  //     id: 7,
+  //     type: "deadline",
+  //     title: "Upcoming Deadline",
+  //     description: "Mobile App Development project deadline is approaching",
+  //     timestamp: "2024-01-20T08:45:00",
+  //     read: false,
+  //   },
+  // ]);
 
+  const [notifications, setNotifications] = useState([]);
   const [currentTab, setCurrentTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const [filterType, setFilterType] = useState("all"); // Added filter state
+
+  // Fetch dữ liệu thông báo
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5001/api/notification",
+          {
+            headers: {
+              "Cache-Control": "no-cache",
+              Pragma: "no-cache",
+            },
+          }
+        );
+
+        console.log("API Response:", response.data);
+
+        // Đảm bảo response là một mảng
+        if (Array.isArray(response.data)) {
+          setNotifications(response.data);
+        } else {
+          console.error("Invalid data format from API:", response.data);
+          setNotifications([]); // Đảm bảo luôn có mảng
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy thông báo:", error);
+        setNotifications([]); // Xử lý lỗi bằng cách gán giá trị mặc định
+      }
+    };
+
+    fetchNotifications();
+  }, []);
 
   const handleTabChange = (event, newValue) => {
     setCurrentTab(newValue);
@@ -136,20 +170,22 @@ const Notifications = () => {
   };
 
   const filterNotifications = () => {
+    if (!notifications || notifications.length === 0) return [];
+
     let filtered = notifications;
 
     // Apply read/unread filter
     if (filterType === "unread") {
-      filtered = filtered.filter((notif) => !notif.read);
+      filtered = filtered.filter((notif) => !notif.isRead);
     } else if (filterType === "read") {
-      filtered = filtered.filter((notif) => notif.read);
+      filtered = filtered.filter((notif) => notif.isRead);
     }
 
     // Apply tab filter
     if (currentTab !== 0) {
       const types = ["new_task", "task_update", "deadline", "expired_deadline"];
       filtered = filtered.filter(
-        (notif) => notif.type === types[currentTab - 1]
+        (notif) => notif.type.toLowerCase() === types[currentTab - 1]
       );
     }
 
@@ -204,11 +240,11 @@ const Notifications = () => {
 
       <Grid container spacing={2}>
         {filterNotifications().map((notification) => (
-          <Grid item xs={12} key={notification.id}>
+          <Grid item xs={12} key={notification._id}>
             <Fade in={true}>
               <StyledCard
                 sx={{
-                  bgcolor: notification.read
+                  bgcolor: notification.isRead
                     ? "background.default"
                     : "action.hover",
                 }}
@@ -225,7 +261,7 @@ const Notifications = () => {
                       <Badge
                         color="error"
                         variant="dot"
-                        invisible={notification.read}
+                        invisible={notification.isRead}
                       >
                         <FaBell color={getTypeColor(notification.type)} />
                       </Badge>
@@ -234,35 +270,23 @@ const Notifications = () => {
                           variant="h6"
                           component="h2"
                           sx={{
-                            fontWeight: notification.read ? "normal" : "bold",
+                            fontWeight: notification.isRead ? "normal" : "bold",
                           }}
                         >
-                          {notification.title}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{
-                            mt: 1,
-                            fontWeight: notification.read ? "normal" : "bold",
-                          }}
-                        >
-                          {notification.description}
+                          {notification.content}
                         </Typography>
                         <Typography
                           variant="caption"
                           color="text.secondary"
                           sx={{ mt: 1, display: "block" }}
                         >
-                          {new Date(notification.timestamp).toLocaleString()}
+                          {new Date(notification.createdAt).toLocaleString()}
                         </Typography>
                       </Box>
                     </Box>
                     <Box>
                       <Chip
-                        label={notification.type
-                          .replace("_", " ")
-                          .toUpperCase()}
+                        label={notification.type.toUpperCase()}
                         size="small"
                         sx={{
                           bgcolor: getTypeColor(notification.type),
@@ -278,15 +302,15 @@ const Notifications = () => {
                         }}
                       >
                         <IconButton
-                          onClick={() => markAsRead(notification.id)}
-                          disabled={notification.read}
+                          onClick={() => markAsRead(notification._id)}
+                          disabled={notification.isRead}
                           aria-label="mark as read"
                           size="small"
                         >
                           <FaCheck />
                         </IconButton>
                         <IconButton
-                          onClick={() => deleteNotification(notification.id)}
+                          onClick={() => deleteNotification(notification._id)}
                           aria-label="delete notification"
                           size="small"
                           color="error"

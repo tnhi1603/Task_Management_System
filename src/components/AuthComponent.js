@@ -122,7 +122,8 @@ const AuthComponent = () => {
         if (isLogin) {
           // Login API call
           const response = await axios.post(
-            "http://localhost:5000/api/auth/login",
+            // "http://localhost:5000/api/auth/login",
+            "http://localhost:5001/api/auth/login",
             {
               email: formData.email,
               password: formData.password,
@@ -139,11 +140,12 @@ const AuthComponent = () => {
           // Chuyển hướng đến Dashboard sau khi login thành công
           setTimeout(() => {
             navigate("/");
-          }, 1000)
+          }, 1000);
         } else {
           // Register API call
           const response = await axios.post(
-            "http://localhost:5000/api/auth/register",
+            // "http://localhost:5000/api/auth/register",
+            "http://localhost:5001/api/auth/register",
             {
               name: formData.name,
               email: formData.email,
@@ -155,7 +157,7 @@ const AuthComponent = () => {
             message: "Registration successful! You can now login.",
             severity: "success",
           });
-          setIsLogin(true); // Switch to login form after successful registration
+          setIsLogin(true);
         }
       } catch (error) {
         setSnackbar({
