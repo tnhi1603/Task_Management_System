@@ -25,6 +25,7 @@ import React, { useState } from "react";
 import { Fab, Modal, Box, TextField, Button, MenuItem } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
 const AddTaskButton = ({ onTaskAdded }) => {
   const [open, setOpen] = useState(false); // Quản lý trạng thái Modal
@@ -43,18 +44,21 @@ const AddTaskButton = ({ onTaskAdded }) => {
   };
 
   const handleSubmit = async () => {
+    const token = localStorage.getItem("token");
+    const decodedToken = jwtDecode(token);
+    const userId = decodedToken.id;
+    task.idUser = userId;
     try {
       // Gửi dữ liệu đến Backend
-      const response = await axios.post("/api/tasks", task);
+      const response = await axios.post("http://localhost:5001/api/task", task);
       console.log("Công việc mới:", response.data);
 
       // Gọi callback để cập nhật danh sách công việc
       if (onTaskAdded) {
         onTaskAdded(response.data);
       }
-
       // Đóng modal và reset form
-      setTask({ title: "", dueDate: "", priority: "Medium" });
+      setTask({ idUser: userId, title: "", dueDate: "", priority: "Medium" });
       handleClose();
     } catch (error) {
       console.error("Lỗi khi thêm công việc:", error);

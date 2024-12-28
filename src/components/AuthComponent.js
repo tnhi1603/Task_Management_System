@@ -122,7 +122,6 @@ const AuthComponent = () => {
         if (isLogin) {
           // Login API call
           const response = await axios.post(
-            // "http://localhost:5000/api/auth/login",
             "http://localhost:5001/api/auth/login",
             {
               email: formData.email,
@@ -144,7 +143,6 @@ const AuthComponent = () => {
         } else {
           // Register API call
           const response = await axios.post(
-            // "http://localhost:5000/api/auth/register",
             "http://localhost:5001/api/auth/register",
             {
               name: formData.name,

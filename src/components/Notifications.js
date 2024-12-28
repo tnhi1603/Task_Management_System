@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 import {
   Box,
   Typography,
@@ -16,6 +17,12 @@ import {
   Menu,
   MenuItem,
   Button,
+  Modal,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  CircularProgress,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { FaBell, FaCheck, FaTrash, FaFilter } from "react-icons/fa";
@@ -30,72 +37,20 @@ const StyledCard = styled(Card)(({ theme }) => ({
 }));
 
 const Notifications = () => {
-  // const [notifications, setNotifications] = useState([
-  //   {
-  //     id: 1,
-  //     type: "new_task",
-  //     title: "New Project Assignment",
-  //     description: "You have been assigned to the new AI Development project",
-  //     timestamp: "2024-01-20T10:30:00",
-  //     read: false,
-  //   },
-  //   {
-  //     id: 2,
-  //     type: "task_update",
-  //     title: "Task Status Updated",
-  //     description:
-  //       "Website redesign project status has been updated to 'In Progress'",
-  //     timestamp: "2024-01-20T09:15:00",
-  //     read: true,
-  //   },
-  //   {
-  //     id: 3,
-  //     type: "deadline",
-  //     title: "Upcoming Deadline",
-  //     description: "Mobile App Development project deadline is approaching",
-  //     timestamp: "2024-01-20T08:45:00",
-  //     read: false,
-  //   },
-  //   {
-  //     id: 4,
-  //     type: "expired_deadline",
-  //     title: "Deadline Expired",
-  //     description: "The deadline for the UI/UX Design project has expired",
-  //     timestamp: "2024-01-19T23:59:59",
-  //     read: false,
-  //   },
-  //   {
-  //     id: 5,
-  //     type: "deadline",
-  //     title: "Upcoming Deadline",
-  //     description: "Mobile App Development project deadline is approaching",
-  //     timestamp: "2024-01-20T08:45:00",
-  //     read: false,
-  //   },
-  //   {
-  //     id: 6,
-  //     type: "deadline",
-  //     title: "Upcoming Deadline",
-  //     description: "Mobile App Development project deadline is approaching",
-  //     timestamp: "2024-01-20T08:45:00",
-  //     read: false,
-  //   },
-  //   {
-  //     id: 7,
-  //     type: "deadline",
-  //     title: "Upcoming Deadline",
-  //     description: "Mobile App Development project deadline is approaching",
-  //     timestamp: "2024-01-20T08:45:00",
-  //     read: false,
-  //   },
-  // ]);
-
   const [notifications, setNotifications] = useState([]);
+  const [tasks, setTasks] = useState([]); // State to store user tasks
   const [currentTab, setCurrentTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [filterType, setFilterType] = useState("all"); // Added filter state
+  const [filterType, setFilterType] = useState("all");
+  const [openModal, setOpenModal] = useState(false);
+  const [loadingTasks, setLoadingTasks] = useState(false); // Loading state for tasks
+  const [newNotification, setNewNotification] = useState({
+    content: "",
+    type: "Update",
+    taskId: "",
+  });
 
-  // Fetch dữ liệu thông báo
+  // Fetch notifications
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
@@ -109,22 +64,39 @@ const Notifications = () => {
           }
         );
 
-        console.log("API Response:", response.data);
-
-        // Đảm bảo response là một mảng
         if (Array.isArray(response.data)) {
           setNotifications(response.data);
         } else {
           console.error("Invalid data format from API:", response.data);
-          setNotifications([]); // Đảm bảo luôn có mảng
+          setNotifications([]);
         }
       } catch (error) {
-        console.error("Lỗi khi lấy thông báo:", error);
-        setNotifications([]); // Xử lý lỗi bằng cách gán giá trị mặc định
+        console.error("Error fetching notifications:", error);
+        setNotifications([]);
       }
     };
 
     fetchNotifications();
+  }, []);
+
+  // Fetch user tasks
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const decodedToken = jwtDecode(token);
+    const userId = decodedToken.id;
+    const fetchTasks = async () => {
+      try {
+        setLoadingTasks(true);
+        const response = await axios.get(`http://localhost:5001/api/tasks/${userId}`);
+        setTasks(response.data);
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+      } finally {
+        setLoadingTasks(false);
+      }
+    };
+
+    fetchTasks();
   }, []);
 
   const handleTabChange = (event, newValue) => {
@@ -142,16 +114,44 @@ const Notifications = () => {
     setAnchorEl(null);
   };
 
+  const handleModalOpen = () => setOpenModal(true);
+  const handleModalClose = () => setOpenModal(false);
+
+  const handleInputChange = (e) => {
+    setNewNotification({
+      ...newNotification,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleFormSubmit = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5001/api/notification",
+        newNotification
+      );
+      setNotifications((prev) => [...prev, response.data]);
+      setOpenModal(false);
+    } catch (error) {
+      console.error("Error creating notification:", error);
+    }
+  };
+
   const markAsRead = (id) => {
     setNotifications(
       notifications.map((notif) =>
-        notif.id === id ? { ...notif, read: true } : notif
+        notif.id === id ? { ...notif, isRead: true } : notif
       )
     );
   };
 
-  const deleteNotification = (id) => {
-    setNotifications(notifications.filter((notif) => notif.id !== id));
+  const deleteNotification = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5001/api/notification/${id}`);
+      setNotifications(notifications.filter((notif) => notif._id !== id));
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+    }
   };
 
   const getTypeColor = (type) => {
@@ -174,14 +174,12 @@ const Notifications = () => {
 
     let filtered = notifications;
 
-    // Apply read/unread filter
     if (filterType === "unread") {
       filtered = filtered.filter((notif) => !notif.isRead);
     } else if (filterType === "read") {
       filtered = filtered.filter((notif) => notif.isRead);
     }
 
-    // Apply tab filter
     if (currentTab !== 0) {
       const types = ["new_task", "task_update", "deadline", "expired_deadline"];
       filtered = filtered.filter(
@@ -205,14 +203,25 @@ const Notifications = () => {
         <Typography variant="h4" component="h1" gutterBottom>
           Notifications
         </Typography>
-        <Button
-          startIcon={<FaFilter />}
-          onClick={handleFilterClick}
-          variant="outlined"
-          aria-label="filter notifications"
-        >
-          Filter
-        </Button>
+        <Box>
+          <Button
+            startIcon={<FaFilter />}
+            onClick={handleFilterClick}
+            variant="outlined"
+            aria-label="filter notifications"
+            sx={{ mr: 2 }}
+          >
+            Filter
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleModalOpen}
+            aria-label="create notification"
+          >
+            Create Notification
+          </Button>
+        </Box>
       </Box>
 
       <Menu
@@ -326,6 +335,75 @@ const Notifications = () => {
           </Grid>
         ))}
       </Grid>
+
+      <Modal open={openModal} onClose={handleModalClose}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            width: 400,
+          }}
+        >
+          <Typography variant="h6" gutterBottom>
+            Create New Notification
+          </Typography>
+          <TextField
+            label="Content"
+            name="content"
+            fullWidth
+            value={newNotification.content}
+            onChange={handleInputChange}
+            sx={{ mb: 2 }}
+          />
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Type</InputLabel>
+            <Select
+              name="type"
+              value={newNotification.type}
+              onChange={handleInputChange}
+            >
+              <MenuItem value="Reminder">Nhắc nhở</MenuItem>
+              <MenuItem value="Overdue">Trễ hạn</MenuItem>
+              <MenuItem value="Update">Cập nhật</MenuItem>
+              <MenuItem value="Project">Cập nhật dự án</MenuItem>
+              <MenuItem value="System">Thông báo hệ thống</MenuItem>
+              <MenuItem value="Comment">Bình luận</MenuItem>
+              <MenuItem value="Assignment">Phân công</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Task</InputLabel>
+            {loadingTasks ? (
+              <CircularProgress size={24} />
+            ) : (
+              <Select
+                name="taskId"
+                value={newNotification.taskId}
+                onChange={handleInputChange}
+              >
+                {tasks.map((task) => (
+                  <MenuItem key={task.id} value={task.id}>
+                    {task.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            )}
+          </FormControl>
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <Button onClick={handleModalClose} sx={{ mr: 2 }}>
+              Cancel
+            </Button>
+            <Button variant="contained" onClick={handleFormSubmit}>
+              Save
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
     </Container>
   );
 };

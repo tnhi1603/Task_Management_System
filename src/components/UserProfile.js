@@ -111,7 +111,7 @@ const UserProfile = () => {
     const fetchUserProfile = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/user/${userId}`
+          `http://localhost:5001/api/user/${userId}`
         );
         const userData = response.data;
         setProfile({
@@ -218,7 +218,7 @@ const UserProfile = () => {
 
       try {
         const response = await axios.put(
-          `http://localhost:5000/api/user/${userId}/avatar`,
+          `http://localhost:5001/api/user/${userId}/avatar`,
           formData,
           {
             headers: {
