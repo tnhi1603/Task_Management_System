@@ -4,9 +4,11 @@ import TaskStats from "./../../components/TaskStats";
 import FilterBar from "./../../components/FilterBar";
 import AddTaskButton from "./../../components/AddTaskButton";
 import React, { useState } from "react";
+import TaskListPage from "./../TaskListPage/TaskListPage"; // Import the TaskListPage
 
-const Dashboard = ({ filteredTasks, setFilteredTasks }) => {
-  const [tasks, setTasks] = useState(filteredTasks);
+const Dashboard = () => {
+  const [filteredTasks, setFilteredTasks] = useState([]);
+  const [tasks, setTasks] = useState([]); // Store the tasks fetched from API
 
   return (
     <Box sx={{ padding: "20px" }}>
@@ -14,15 +16,20 @@ const Dashboard = ({ filteredTasks, setFilteredTasks }) => {
         Trang chủ: Quản Lý Công Việc
       </Typography>
 
-      <FilterBar tasks={tasks} setFilteredTasks={setFilteredTasks} />
+      {/* Render the TaskListPage which will handle filtering and sorting */}
+      <TaskListPage 
+        tasks={tasks} 
+        setTasks={setTasks} 
+        setFilteredTasks={setFilteredTasks} 
+      />
 
       <Grid container spacing={3} sx={{ mt: 2 }}>
-        {/* Cột trái: Danh sách công việc */}
+        {/* Left column: Task List */}
         <Grid item xs={12} md={8}>
           <TaskList filteredTasks={filteredTasks} />
         </Grid>
 
-        {/* Cột phải: Biểu đồ và thông tin */}
+        {/* Right column: Task Stats */}
         <Grid item xs={12} md={4}>
           <TaskStats />
         </Grid>
