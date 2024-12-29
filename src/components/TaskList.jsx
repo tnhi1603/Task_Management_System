@@ -10,58 +10,6 @@ import {
 } from "@mui/material";
 
 const TaskList = ({ filteredTasks }) => {
-  // const tasks = [
-  //   {
-  //     id: 1,
-  //     title: "Hoàn thành báo cáo",
-  //     dueDate: "2024-12-05",
-  //     priority: "High",
-  //   },
-  //   { id: 2, title: "Họp nhóm", dueDate: "2024-12-07", priority: "Medium" },
-  //   {
-  //     id: 3,
-  //     title: "Thiết kế giao diện",
-  //     dueDate: "2024-12-09",
-  //     priority: "Low",
-  //   },
-  //   {
-  //     id: 4,
-  //     title: "Thiết kế giao diện",
-  //     dueDate: "2024-12-09",
-  //     priority: "Low",
-  //   },
-  //   {
-  //     id: 5,
-  //     title: "Thiết kế giao diện",
-  //     dueDate: "2024-12-09",
-  //     priority: "Low",
-  //   },
-  //   {
-  //     id: 6,
-  //     title: "Thiết kế giao diện",
-  //     dueDate: "2024-12-09",
-  //     priority: "Low",
-  //   },
-  //   {
-  //     id: 7,
-  //     title: "Thiết kế giao diện",
-  //     dueDate: "2024-12-09",
-  //     priority: "Low",
-  //   },
-  //   {
-  //     id: 8,
-  //     title: "Thiết kế giao diện",
-  //     dueDate: "2024-12-09",
-  //     priority: "Low",
-  //   },
-  //   {
-  //     id: 9,
-  //     title: "Thiết kế giao diện",
-  //     dueDate: "2024-12-09",
-  //     priority: "Low",
-  //   },
-  // ];
-
   const getPriorityColor = (priority) => {
     switch (priority) {
       case "High":
