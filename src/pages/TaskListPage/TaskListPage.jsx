@@ -41,6 +41,7 @@ const TaskListPage = ({
   filteredTasks = [],
 }) => {
   const navigate = useNavigate();
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState({
@@ -323,6 +324,7 @@ const TaskListPage = ({
           >
             No tasks available.
           </Typography>
+
         )}
       </Grid>
     </Box>

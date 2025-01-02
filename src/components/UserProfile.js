@@ -12,7 +12,6 @@ import {
   Grid,
   Card,
   CardContent,
-  CardMedia,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -135,6 +134,40 @@ const UserProfile = () => {
     };
 
     fetchUserProfile();
+
+    const fetchUserProjects = async () => {
+      const token = localStorage.getItem("token");
+      const decodedToken = jwtDecode(token);
+      const userId = decodedToken.id;
+    
+      try {
+        const response = await axios.get(`http://localhost:5001/api/project/user/${userId}`);
+        
+        // Lọc dự án do chính người dùng tạo (owner)
+        const projects = response.data
+          .filter((project) => project.owner._id === userId)
+          .map((project) => ({
+            id: project._id,
+            title: project.name,
+            description: project.description,
+            startDate: project.startDate,
+            dueDate: project.dueDate,
+          }));
+    
+        setProfile((prevState) => ({
+          ...prevState,
+          projects,
+        }));
+      } catch (error) {
+        setSnackbar({
+          open: true,
+          message: "Failed to fetch user projects. Please try again later.",
+          severity: "error",
+        });
+      }
+    };
+    
+    fetchUserProjects();    
   }, [navigate]);
 
   const handleProfileUpdate = async () => {
@@ -454,27 +487,28 @@ const UserProfile = () => {
             My Projects
           </Typography>
           <Grid container spacing={3}>
-            {profile.projects.map((project) => (
-              <Grid item xs={12} sm={6} key={project.id}>
-                <StyledCard>
-                  <CardMedia
-                    component="img"
-                    height="200"
-                    image={project.image}
-                    alt={project.title}
-                  />
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom>
-                      {project.title}
-                    </Typography>
-                    <Typography color="textSecondary">
-                      {project.description}
-                    </Typography>
-                  </CardContent>
-                </StyledCard>
-              </Grid>
-            ))}
-          </Grid>
+          {profile.projects.map((project) => (
+            <Grid item xs={12} sm={6} md={4} key={project.id}>
+              <StyledCard>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    {project.title}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    {project.description}
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary" display="block">
+                    Start: {new Date(project.startDate).toLocaleDateString()}
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary" display="block">
+                    Due: {new Date(project.dueDate).toLocaleDateString()}
+                  </Typography>
+                </CardContent>
+              </StyledCard>
+            </Grid>
+          ))}
+        </Grid>
+
         </Grid>
       </Grid>
 
