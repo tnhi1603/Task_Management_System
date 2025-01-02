@@ -8,13 +8,12 @@ import {
 import Navbar from "./components/Navbar";
 import UserProfile from "./components/UserProfile";
 import Management from "./components/Projects";
-import Home from "./pages/Home";
-import { Container, Box } from "@mui/material";
 import Notifications from "./components/Notifications";
 import AuthComponent from "./components/AuthComponent";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import TaskListPage from "./pages/TaskListPage/TaskListPage";
 import TaskDetailPage from "./pages/TaskDetailPage/TaskDetailPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function Layout({ children }) {
   const location = useLocation();
@@ -28,9 +27,8 @@ function Layout({ children }) {
 
 function App() {
   const [filteredTasks, setFilteredTasks] = useState([]);
-  const [tasks, setTasks] = useState([]); // Assuming you will fetch tasks
+  const [tasks, setTasks] = useState([]);
 
-  // Fetch tasks data when the app starts
   useEffect(() => {
     const fetchTasks = async () => {
       try {
@@ -39,8 +37,8 @@ function App() {
           throw new Error("Failed to fetch tasks.");
         }
         const data = await response.json();
-        setTasks(data); // Set tasks after fetching
-        setFilteredTasks(data); // Set filtered tasks initially to all tasks
+        setTasks(data);
+        setFilteredTasks(data);
       } catch (err) {
         console.error("Error fetching tasks:", err);
       }
@@ -54,30 +52,62 @@ function App() {
       <Layout>
         <Routes>
           <Route path="/login" element={<AuthComponent />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/projects" element={<Management />} />
-          <Route path="/profile" element={<UserProfile />} />
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <Notifications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects"
+            element={
+              <ProtectedRoute>
+                <Management />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <UserProfile />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/"
             element={
-              <Dashboard
-                filteredTasks={filteredTasks}
-                setFilteredTasks={setFilteredTasks}
-              />
+              <ProtectedRoute>
+                <Dashboard
+                  filteredTasks={filteredTasks}
+                  setFilteredTasks={setFilteredTasks}
+                />
+              </ProtectedRoute>
             }
           />
           <Route
             path="/tasks"
             element={
-              <TaskListPage
-                tasks={tasks}
-                setTasks={setTasks}
-                filteredTasks={filteredTasks}
-                setFilteredTasks={setFilteredTasks}
-              />
+              <ProtectedRoute>
+                <TaskListPage
+                  tasks={tasks}
+                  setTasks={setTasks}
+                  filteredTasks={filteredTasks}
+                  setFilteredTasks={setFilteredTasks}
+                />
+              </ProtectedRoute>
             }
           />
-          <Route path="/task-details/:id" element={<TaskDetailPage />} />
+          <Route
+            path="/task-details/:id"
+            element={
+              <ProtectedRoute>
+                <TaskDetailPage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Layout>
     </Router>

@@ -1,7 +1,6 @@
 import { Grid, Box, Typography } from "@mui/material";
 import TaskList from "./../../components/TaskList";
 import TaskStats from "./../../components/TaskStats";
-import FilterBar from "./../../components/FilterBar";
 import AddTaskButton from "./../../components/AddTaskButton";
 import React, { useState } from "react";
 import TaskListPage from "./../TaskListPage/TaskListPage"; // Import the TaskListPage
