@@ -77,7 +77,7 @@ function App() {
               />
             }
           />
-          <Route path="/task-details/:id" element={<TaskDetailPage />} />
+          <Route path="/task-details/:taskId" element={<TaskDetailPage />} />
         </Routes>
       </Layout>
     </Router>
