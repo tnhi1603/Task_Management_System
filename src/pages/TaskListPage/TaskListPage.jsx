@@ -15,7 +15,7 @@ import {
   Paper,
 } from "@mui/material";
 
-const TaskListPage = ({ tasks, setTasks, setFilteredTasks, filteredTasks }) => {
+const TaskListPage = ({ tasks, setTasks, setFilteredTasks, filteredTasks = [] }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState({
@@ -145,83 +145,87 @@ const TaskListPage = ({ tasks, setTasks, setFilteredTasks, filteredTasks }) => {
         </Grid>
       </Paper>
       <Grid container spacing={2}>
-        {filteredTasks.map((task) => (
-          <Grid item xs={12} md={6} key={task._id}>
-            <Paper
-              sx={{
-                padding: 2,
-                display: "flex",
-                alignItems: "center",
-                gap: 2,
-                cursor: "pointer",
-                transition: "box-shadow 0.3s",
-                "&:hover": {
-                  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-                },
-              }}
-            >
-              <Box
+        {filteredTasks.length > 0 ? (
+          filteredTasks.map((task) => (
+            <Grid item xs={12} md={6} key={task._id}>
+              <Paper
                 sx={{
-                  width: 50,
-                  height: 50,
-                  borderRadius: "50%",
-                  overflow: "hidden",
-                  flexShrink: 0,
+                  padding: 2,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  cursor: "pointer",
+                  transition: "box-shadow 0.3s",
+                  "&:hover": {
+                    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                  },
                 }}
               >
-                <img
-                  src={task.assigned_users.avatar}
-                  alt={task.assigned_users.name}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              </Box>
-              <Box flex={1}>
                 <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
+                  sx={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    flexShrink: 0,
+                  }}
                 >
-                  <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                    {task.title}
-                  </Typography>
-                  <Chip
-                    label={task.priority}
-                    size="small"
-                    sx={{
-                      backgroundColor:
-                        task.priority === "High"
-                          ? "#ffebee"
-                          : task.priority === "Medium"
-                          ? "#fff3e0"
-                          : "#e8f5e9",
-                      color:
-                        task.priority === "High"
-                          ? "#c62828"
-                          : task.priority === "Medium"
-                          ? "#ef6c00"
-                          : "#2e7d32",
-                    }}
+                  <img
+                    // src={task.assigned_users.avatar}
+                    // alt={task.assigned_users.name}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   />
                 </Box>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mt: 1 }}
-                >
-                  Dự án: {task.project_name}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mt: 1 }}
-                >
-                  {task.status} • Hạn:{" "}
-                  {new Date(task.dueDate).toLocaleDateString()}
-                </Typography>
-              </Box>
-            </Paper>
-          </Grid>
-        ))}
+                <Box flex={1}>
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
+                    <Typography variant="h6" sx={{ fontWeight: 500 }}>
+                      {task.title}
+                    </Typography>
+                    <Chip
+                      label={task.priority}
+                      size="small"
+                      sx={{
+                        backgroundColor:
+                          task.priority === "High"
+                            ? "#ffebee"
+                            : task.priority === "Medium"
+                            ? "#fff3e0"
+                            : "#e8f5e9",
+                        color:
+                          task.priority === "High"
+                            ? "#c62828"
+                            : task.priority === "Medium"
+                            ? "#ef6c00"
+                            : "#2e7d32",
+                      }}
+                    />
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mt: 1 }}
+                  >
+                    Dự án: {task.project_name}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mt: 1 }}
+                  >
+                    {task.status} • Hạn:{" "}
+                    {new Date(task.dueDate).toLocaleDateString()}
+                  </Typography>
+                </Box>
+              </Paper>
+            </Grid>
+          ))
+        ) : (
+          <Typography>No tasks available.</Typography>
+        )}
       </Grid>
     </Box>
   );
