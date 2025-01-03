@@ -4,14 +4,16 @@ import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 const TaskItem = ({ task, setTasks }) => {
   const handleMarkComplete = async () => {
-    await axios.patch(`/api/tasks/${task.id}`, { status: "completed" });
+    await axios.patch(`http://localhost:5001/tasks/${task.id}`, {
+      status: "completed",
+    });
     setTasks((prev) =>
       prev.map((t) => (t.id === task.id ? { ...t, status: "completed" } : t))
     );
   };
 
   const handleDelete = async () => {
-    await axios.delete(`/api/tasks/${task.id}`);
+    await axios.delete(`http://localhost:5001/tasks/${task.id}`);
     setTasks((prev) => prev.filter((t) => t.id !== task.id));
   };
 

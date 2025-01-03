@@ -1,76 +1,79 @@
-// import React from "react";
-// import { Box, TextField, MenuItem } from "@mui/material";
+// Task_Management_System/src/components/FilterBar.jsx
 
-// const FilterBar = () => {
-//   return (
-//     <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
-//       <TextField
-//         label="Lọc theo thời gian"
-//         select
-//         variant="outlined"
-//         // size="small"
-//         defaultValue=""
-//         sx={{ width: "400px" }}
-//       >
-//         <MenuItem value="">Tất cả</MenuItem>
-//         <MenuItem value="today">Hôm nay</MenuItem>
-//         <MenuItem value="this_week">Tuần này</MenuItem>
-//         <MenuItem value="this_month">Tháng này</MenuItem>
-//       </TextField>
-//     </Box>
-//   );
-// };
+import React, { useState } from "react";
+import { Box, TextField, Button, MenuItem } from "@mui/material";
 
-// export default FilterBar;
-
-import React, { useState, useEffect } from "react";
-import { TextField, Box, Button } from "@mui/material";
-
-const FilterBar = ({ tasks, setFilteredTasks }) => {
+const FilterBar = ({ onFilter }) => {
   const [filter, setFilter] = useState({
+    status: "",
     startDate: "",
     endDate: "",
+    keyword: "",
   });
-  // Hàm xử lý bộ lọc
+
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilter({ ...filter, [name]: value });
+    setFilter((prev) => ({ ...prev, [name]: value }));
   };
+
   const applyFilter = () => {
-    const start = new Date(filter.startDate);
-    const end = new Date(filter.endDate);
-
-    const filtered = tasks.filter((task) => {
-      const dueDate = new Date(task.dueDate); // Giả sử mỗi task có trường `dueDate`
-      return dueDate >= start && dueDate <= end;
-    });
-
-    setFilteredTasks(filtered);
+    onFilter(filter);
   };
+
+  const resetFilter = () => {
+    setFilter({
+      status: "",
+      startDate: "",
+      endDate: "",
+      keyword: "",
+    });
+    onFilter({});
+  };
+
   return (
-    <Box>
-      {/* Bộ lọc */}
-      <Box display="flex" gap={2} marginBottom={2}>
-        <TextField
-          label="Từ ngày"
-          type="date"
-          name="startDate"
-          InputLabelProps={{ shrink: true }}
-          value={filter.startDate}
-          onChange={handleFilterChange}
-        />
-        <TextField
-          label="Đến ngày"
-          type="date"
-          name="endDate"
-          InputLabelProps={{ shrink: true }}
-          value={filter.endDate}
-          onChange={handleFilterChange}
-        />
-        <Button variant="contained" color="primary" onClick={applyFilter}>
-          Áp dụng
-        </Button>
-      </Box>
+    <Box display="flex" gap={2} mb={2}>
+      <TextField
+        label="Trạng Thái"
+        name="status"
+        select
+        value={filter.status}
+        onChange={handleFilterChange}
+        style={{ minWidth: 150 }}
+      >
+        <MenuItem value="">Tất cả</MenuItem>
+        <MenuItem value="Đang chạy">Đang chạy</MenuItem>
+        <MenuItem value="Hoàn thành">Hoàn thành</MenuItem>
+        <MenuItem value="Đã đóng">Đã đóng</MenuItem>
+      </TextField>
+      <TextField
+        label="Từ ngày"
+        type="date"
+        name="startDate"
+        InputLabelProps={{ shrink: true }}
+        value={filter.startDate}
+        onChange={handleFilterChange}
+      />
+      <TextField
+        label="Đến ngày"
+        type="date"
+        name="endDate"
+        InputLabelProps={{ shrink: true }}
+        value={filter.endDate}
+        onChange={handleFilterChange}
+      />
+      <TextField
+        label="Từ Khóa"
+        name="keyword"
+        value={filter.keyword}
+        onChange={handleFilterChange}
+        style={{ flex: 1 }}
+      />
+      <Button variant="contained" color="primary" onClick={applyFilter}>
+        Áp dụng
+      </Button>
+      <Button variant="outlined" color="secondary" onClick={resetFilter}>
+        Đặt Lại
+      </Button>
     </Box>
   );
 };
