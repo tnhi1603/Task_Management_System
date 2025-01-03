@@ -17,12 +17,12 @@ import {
   TextField,
   useTheme,
   Autocomplete,
+  LinearProgress,
 } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const ProjectPage = () => {
-  // Đặt giá trị mặc định cho startDate và dueDate
   const [newProject, setNewProject] = useState({
     name: "",
     description: "",
@@ -39,6 +39,7 @@ const ProjectPage = () => {
   const [projects, setProjects] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
   const [openAddForm, setOpenAddForm] = useState(false);
+  const [projectStats, setProjectStats] = useState({});
   const navigate = useNavigate();
   const theme = useTheme();
 
@@ -52,8 +53,30 @@ const ProjectPage = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setProjects(response.data);
+      fetchStatistics(response.data, token);
     } catch (error) {
       console.error("Error fetching projects:", error);
+    }
+  };
+
+  const fetchStatistics = async (projectsData, token) => {
+    try {
+      const statsPromises = projectsData.map((project) =>
+        axios.get(
+          `http://localhost:5001/api/project/${project._id}/statistics`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+      );
+      const statsResponses = await Promise.all(statsPromises);
+      const stats = {};
+      statsResponses.forEach((res, index) => {
+        stats[projectsData[index]._id] = res.data;
+      });
+      setProjectStats(stats);
+    } catch (error) {
+      console.error("Error fetching statistics:", error);
     }
   };
 
@@ -72,9 +95,9 @@ const ProjectPage = () => {
   useEffect(() => {
     fetchProjects();
     fetchAllUsers();
+    // eslint-disable-next-line
   }, []);
 
-  // Kiểm tra các trường bắt buộc
   const handleAddProject = async () => {
     if (!newProject.name || !newProject.description) {
       alert("Vui lòng điền vào các trường bắt buộc: Tên và Mô tả");
@@ -144,6 +167,19 @@ const ProjectPage = () => {
                 <Typography variant="body2" color="textSecondary">
                   Due: {new Date(project.dueDate).toLocaleDateString()}
                 </Typography>
+                {projectStats[project._id] && (
+                  <Box mt={2}>
+                    <Typography variant="subtitle2">Progress:</Typography>
+                    <LinearProgress
+                      variant="determinate"
+                      value={projectStats[project._id].progress}
+                      sx={{ height: 10, borderRadius: 5, mt: 1 }}
+                    />
+                    <Typography variant="body2" color="textSecondary">
+                      {projectStats[project._id].progress.toFixed(2)}%
+                    </Typography>
+                  </Box>
+                )}
                 <Box mt={2}>
                   <Typography variant="subtitle2">Members:</Typography>
                   <Box display="flex" flexWrap="wrap">
@@ -240,9 +276,9 @@ const ProjectPage = () => {
               value={newProject.status}
               onChange={handleInputChange}
             >
-              <option value="Active">Active</option>
+              <option value="In Progress">In Progress</option>
               <option value="Completed">Completed</option>
-              <option value="On Hold">On Hold</option>
+              <option value="Closed">Closed</option>
             </TextField>
             <Autocomplete
               multiple

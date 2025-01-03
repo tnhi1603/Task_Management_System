@@ -23,6 +23,18 @@ const TaskList = ({ filteredTasks }) => {
     }
   };
 
+  const formatDueDate = (date) => {
+    const options = {
+      timeZone: "Asia/Ho_Chi_Minh",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    };
+    return new Date(date).toLocaleString("vi-VN", options);
+  };
+
   return (
     <Box>
       <Typography variant="h6" sx={{ mb: 2 }}>
@@ -34,7 +46,7 @@ const TaskList = ({ filteredTasks }) => {
             <ListItem>
               <ListItemText
                 primary={task.title}
-                secondary={`Hạn chót: ${task.dueDate}`}
+                secondary={`Hạn chót: ${formatDueDate(task.dueDate)}`}
               />
               <Chip
                 label={task.priority}

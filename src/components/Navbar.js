@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { styled } from "@mui/system";
 import {
   AppBar,
@@ -28,7 +28,7 @@ import {
 import { Link, useLocation } from "react-router-dom";
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  backgroundColor: "#1976d2", // Màu nền của AppBar
+  backgroundColor: "#1976d2",
 }));
 
 const NavButton = styled(Button)(({ theme }) => ({
@@ -46,9 +46,32 @@ const StyledLink = styled(Link)(({ theme }) => ({
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const location = useLocation(); // Lấy đường dẫn hiện tại
+  const location = useLocation();
+
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+          "http://localhost:5001/api/notification/unread/count",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const data = await response.json();
+        setUnreadCount(data.count);
+      } catch (error) {
+        console.error("Error fetching unread count:", error);
+      }
+    };
+
+    fetchUnreadCount();
+  }, []);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -65,7 +88,7 @@ const Navbar = () => {
     {
       text: "Notifications",
       icon: (
-        <Badge badgeContent={5} color="error">
+        <Badge badgeContent={unreadCount} color="error">
           <FaBell size={20} />
         </Badge>
       ),
@@ -84,8 +107,8 @@ const Navbar = () => {
               sx={{
                 "&:hover": { backgroundColor: "#e3f2fd" },
                 backgroundColor:
-                  location.pathname === item.path ? "#fff" : "transparent", // Màu nền trắng khi đang chọn
-                color: location.pathname === item.path ? "#1976d2" : "inherit", // Màu chữ xanh khi đang chọn
+                  location.pathname === item.path ? "#fff" : "transparent",
+                color: location.pathname === item.path ? "#1976d2" : "inherit",
               }}
             >
               <ListItemIcon>{item.icon}</ListItemIcon>
@@ -130,9 +153,9 @@ const Navbar = () => {
                       backgroundColor:
                         location.pathname === item.path
                           ? "#fff"
-                          : "transparent", // Màu nền trắng khi đang chọn
+                          : "transparent",
                       color:
-                        location.pathname === item.path ? "#1976d2" : "inherit", // Màu chữ xanh khi đang chọn
+                        location.pathname === item.path ? "#1976d2" : "inherit",
                     }}
                   >
                     {item.text}

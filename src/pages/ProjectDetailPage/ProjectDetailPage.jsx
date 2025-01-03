@@ -298,6 +298,13 @@ const ProjectDetailPage = () => {
     }
   };
 
+  // New function to get project members
+  const getProjectMembers = () => {
+    return users.filter((user) =>
+      project.members.some((member) => member._id === user._id)
+    );
+  };
+
   if (!project) return <Typography>Loading...</Typography>;
 
   return (
@@ -645,7 +652,7 @@ const ProjectDetailPage = () => {
         <DialogTitle>Edit Task Member</DialogTitle>
         <DialogContent>
           <Autocomplete
-            options={users}
+            options={getProjectMembers()}
             getOptionLabel={(option) => option.name + " - " + option.email}
             value={users.find((u) => u._id === selectedTaskMember) || null}
             onChange={(_, value) => {
@@ -741,7 +748,7 @@ const ProjectDetailPage = () => {
             InputLabelProps={{ shrink: true }}
           />
           <Autocomplete
-            options={users}
+            options={getProjectMembers()}
             getOptionLabel={(option) => option.name + " - " + option.email}
             value={
               editedTask.idUser

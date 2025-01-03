@@ -87,7 +87,9 @@ const Notifications = () => {
     const fetchTasks = async () => {
       try {
         setLoadingTasks(true);
-        const response = await axios.get(`http://localhost:5001/api/tasks/${userId}`);
+        const response = await axios.get(
+          `http://localhost:5001/api/tasks/${userId}`
+        );
         setTasks(response.data);
       } catch (error) {
         console.error("Error fetching tasks:", error);
@@ -137,12 +139,17 @@ const Notifications = () => {
     }
   };
 
-  const markAsRead = (id) => {
-    setNotifications(
-      notifications.map((notif) =>
-        notif.id === id ? { ...notif, isRead: true } : notif
-      )
-    );
+  const markAsRead = async (id) => {
+    try {
+      await axios.patch(`http://localhost:5001/api/notification/${id}/read`);
+      setNotifications(
+        notifications.map((notif) =>
+          notif._id === id ? { ...notif, isRead: true } : notif
+        )
+      );
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
   };
 
   const deleteNotification = async (id) => {
@@ -156,14 +163,20 @@ const Notifications = () => {
 
   const getTypeColor = (type) => {
     switch (type) {
-      case "new_task":
+      case "Reminder":
         return "#2196f3";
-      case "task_update":
-        return "#4caf50";
-      case "deadline":
+      case "Overdue":
         return "#f44336";
-      case "expired_deadline":
+      case "Update":
+        return "#4caf50";
+      case "Project":
         return "#9c27b0";
+      case "System":
+        return "#ff9800";
+      case "Comment":
+        return "#00bcd4";
+      case "Assignment":
+        return "#8bc34a";
       default:
         return "#757575";
     }
@@ -181,9 +194,17 @@ const Notifications = () => {
     }
 
     if (currentTab !== 0) {
-      const types = ["new_task", "task_update", "deadline", "expired_deadline"];
+      const types = [
+        "Reminder",
+        "Overdue",
+        "Update",
+        "Project",
+        "System",
+        "Comment",
+        "Assignment",
+      ];
       filtered = filtered.filter(
-        (notif) => notif.type.toLowerCase() === types[currentTab - 1]
+        (notif) => notif.type === types[currentTab - 1]
       );
     }
 
@@ -241,10 +262,13 @@ const Notifications = () => {
         sx={{ mb: 3 }}
       >
         <Tab label="All" />
-        <Tab label="New Tasks" />
-        <Tab label="Updates" />
-        <Tab label="Deadlines" />
-        <Tab label="Expired Deadlines" />
+        <Tab label="Reminder" />
+        <Tab label="Overdue" />
+        <Tab label="Update" />
+        <Tab label="Project" />
+        <Tab label="System" />
+        <Tab label="Comment" />
+        <Tab label="Assignment" />
       </Tabs>
 
       <Grid container spacing={2}>

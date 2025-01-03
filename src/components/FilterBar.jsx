@@ -33,20 +33,20 @@ const FilterBar = ({ onFilter }) => {
   return (
     <Box display="flex" gap={2} mb={2}>
       <TextField
-        label="Trạng Thái"
+        label="Status"
         name="status"
         select
         value={filter.status}
         onChange={handleFilterChange}
         style={{ minWidth: 150 }}
       >
-        <MenuItem value="">Tất cả</MenuItem>
-        <MenuItem value="Đang chạy">Đang chạy</MenuItem>
-        <MenuItem value="Hoàn thành">Hoàn thành</MenuItem>
-        <MenuItem value="Đã đóng">Đã đóng</MenuItem>
+        <MenuItem value="">All</MenuItem>
+        <MenuItem value="Not Started">Not Started</MenuItem>
+        <MenuItem value="In Progress">In Progress</MenuItem>
+        <MenuItem value="Completed">Completed</MenuItem>
       </TextField>
       <TextField
-        label="Từ ngày"
+        label="Start Date"
         type="date"
         name="startDate"
         InputLabelProps={{ shrink: true }}
@@ -54,7 +54,7 @@ const FilterBar = ({ onFilter }) => {
         onChange={handleFilterChange}
       />
       <TextField
-        label="Đến ngày"
+        label="End Date"
         type="date"
         name="endDate"
         InputLabelProps={{ shrink: true }}
@@ -62,17 +62,17 @@ const FilterBar = ({ onFilter }) => {
         onChange={handleFilterChange}
       />
       <TextField
-        label="Từ Khóa"
+        label="Keyword"
         name="keyword"
         value={filter.keyword}
         onChange={handleFilterChange}
         style={{ flex: 1 }}
       />
       <Button variant="contained" color="primary" onClick={applyFilter}>
-        Áp dụng
+        Apply
       </Button>
       <Button variant="outlined" color="secondary" onClick={resetFilter}>
-        Đặt Lại
+        Reset
       </Button>
     </Box>
   );

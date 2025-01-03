@@ -67,7 +67,6 @@ const TaskListPage = ({
     severity: "success", // 'success' | 'error' | 'warning' | 'info'
   });
 
-  // State cho Dialog Sửa Trạng Thái
   const [editStatusDialog, setEditStatusDialog] = useState({
     open: false,
     taskId: null,
@@ -75,18 +74,15 @@ const TaskListPage = ({
   });
   const [selectedStatus, setSelectedStatus] = useState("");
 
-  // Hàm mở Dialog Sửa Trạng Thái
   const openEditStatusDialog = (taskId, currentStatus) => {
     setEditStatusDialog({ open: true, taskId, currentStatus });
     setSelectedStatus(currentStatus);
   };
 
-  // Hàm đóng Dialog Sửa Trạng Thái
   const closeEditStatusDialog = () => {
     setEditStatusDialog({ open: false, taskId: null, currentStatus: "" });
   };
 
-  // Hàm cập nhật trạng thái task
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
       setLoading(true);
@@ -101,7 +97,6 @@ const TaskListPage = ({
           },
         }
       );
-      // Cập nhật trạng thái trong state
       const updatedTask = response.data;
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
@@ -115,29 +110,26 @@ const TaskListPage = ({
       );
       setLoading(false);
 
-      // Hiển thị thông báo thành công
       setSnackbar({
         open: true,
-        message: "Cập nhật trạng thái thành công!",
+        message: "Status updated successfully!",
         severity: "success",
       });
     } catch (err) {
       console.error("Error updating task status:", err);
       setSnackbar({
         open: true,
-        message: "Cập nhật trạng thái thất bại!",
+        message: "Failed to update status!",
         severity: "error",
       });
       setLoading(false);
     }
   };
 
-  // Hàm đánh dấu hoàn thành
   const handleMarkComplete = async (taskId) => {
     await updateTaskStatus(taskId, "Completed");
   };
 
-  // Hàm lưu trạng thái mới từ Dialog
   const handleSaveEditStatus = async () => {
     const { taskId } = editStatusDialog;
     if (taskId && selectedStatus) {
@@ -146,7 +138,7 @@ const TaskListPage = ({
     } else {
       setSnackbar({
         open: true,
-        message: "Vui lòng chọn trạng thái mới.",
+        message: "Please select a new status.",
         severity: "warning",
       });
     }
@@ -200,7 +192,6 @@ const TaskListPage = ({
 
   useEffect(() => {
     applyFilters();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter, tasks]);
 
   const handleFilterChange = (e) => {
@@ -269,7 +260,7 @@ const TaskListPage = ({
   }
 
   return (
-    <Box sx={{ padding: 4, backgroundColor: "#e0f7fa", minHeight: "100vh" }}>
+    <Box sx={{ padding: 4, backgroundColor: "#ffffff", minHeight: "100vh" }}>
       <Paper
         sx={{ padding: 3, marginBottom: 3, boxShadow: 4, borderRadius: 2 }}
       >
@@ -400,7 +391,6 @@ const TaskListPage = ({
                       Project: {task.project_details.name || "Unknown"}
                     </Typography>
                   </Box>
-                  {/* Thêm Box chứa các nút hành động */}
                   <Box
                     display="flex"
                     flexDirection="column"
@@ -410,25 +400,26 @@ const TaskListPage = ({
                       variant="contained"
                       color="success"
                       size="small"
-                      sx={{ mb: 1 }}
+                      sx={{ mb: 1, fontSize: "0.875rem", padding: "6px 12px" }}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleMarkComplete(task._id);
                       }}
                       disabled={task.status === "Completed"}
                     >
-                      Đánh dấu hoàn thành
+                      Mark Complete
                     </Button>
                     <Button
                       variant="outlined"
                       color="primary"
                       size="small"
+                      sx={{ fontSize: "0.875rem", padding: "6px 12px" }}
                       onClick={(e) => {
                         e.stopPropagation();
                         openEditStatusDialog(task._id, task.status);
                       }}
                     >
-                      Sửa trạng thái
+                      Edit Status
                     </Button>
                   </Box>
                   <Chip
@@ -457,36 +448,34 @@ const TaskListPage = ({
         )}
       </Grid>
 
-      {/* Dialog Sửa Trạng Thái */}
       <Dialog open={editStatusDialog.open} onClose={closeEditStatusDialog}>
-        <DialogTitle>Sửa Trạng Thái Công Việc</DialogTitle>
+        <DialogTitle>Edit Task Status</DialogTitle>
         <DialogContent>
           <FormControl fullWidth variant="outlined" margin="normal">
-            <InputLabel>Trạng thái</InputLabel>
+            <InputLabel>Status</InputLabel>
             <Select
-              label="Trạng thái"
+              label="Status"
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
             >
-              <MenuItem value="Not Started">Chưa bắt đầu</MenuItem>
-              <MenuItem value="In Progress">Đang thực hiện</MenuItem>
-              <MenuItem value="Completed">Hoàn thành</MenuItem>
+              <MenuItem value="Not Started">Not Started</MenuItem>
+              <MenuItem value="In Progress">In Progress</MenuItem>
+              <MenuItem value="Completed">Completed</MenuItem>
             </Select>
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeEditStatusDialog}>Hủy</Button>
+          <Button onClick={closeEditStatusDialog}>Cancel</Button>
           <Button
             onClick={handleSaveEditStatus}
             variant="contained"
             color="primary"
           >
-            Lưu
+            Save
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Hiển thị Snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
