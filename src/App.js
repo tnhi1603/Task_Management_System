@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { jwtDecode } from "jwt-decode";
 import {
   BrowserRouter as Router,
   Routes,
@@ -48,7 +49,12 @@ function App() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await fetch("http://localhost:5001/api/task");
+        const token = localStorage.getItem("token");
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken.id;
+        const response = await fetch(
+          `http://localhost:5001/api/task/user/${userId}`
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch tasks.");
         }

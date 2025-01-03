@@ -87,7 +87,9 @@ const Notifications = () => {
     const fetchTasks = async () => {
       try {
         setLoadingTasks(true);
-        const response = await axios.get(`http://localhost:5001/api/tasks/${userId}`);
+        const response = await axios.get(
+          `http://localhost:5001/api/tasks/${userId}`
+        );
         setTasks(response.data);
       } catch (error) {
         console.error("Error fetching tasks:", error);
@@ -137,12 +139,17 @@ const Notifications = () => {
     }
   };
 
-  const markAsRead = (id) => {
-    setNotifications(
-      notifications.map((notif) =>
-        notif.id === id ? { ...notif, isRead: true } : notif
-      )
-    );
+  const markAsRead = async (id) => {
+    try {
+      await axios.patch(`http://localhost:5001/api/notification/${id}/read`);
+      setNotifications(
+        notifications.map((notif) =>
+          notif._id === id ? { ...notif, isRead: true } : notif
+        )
+      );
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
   };
 
   const deleteNotification = async (id) => {
