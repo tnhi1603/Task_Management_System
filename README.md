@@ -1,70 +1,175 @@
-# Getting Started with Create React App
+# Task Management System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Overview
 
-## Available Scripts
+The Task Management System is a React-based application designed to help users manage tasks and projects efficiently. It provides features such as task creation, project management, notifications, and user profiles. The app utilizes Material-UI for its design and includes various interactive components for a seamless user experience.
 
-In the project directory, you can run:
+## Features
 
-### `npm start`
+1. **Task Management**
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+   - Create, update, delete, and view tasks.
+   - Assign priorities and statuses to tasks.
+   - Filter tasks by status, priority, and keywords.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+2. **Project Management**
 
-### `npm test`
+   - Add and manage projects.
+   - Assign members to projects.
+   - Track project progress with statistics and member details.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+3. **User Authentication**
 
-### `npm run build`
+   - Register and log in using email and password.
+   - Authentication is handled via JWT tokens stored in local storage.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+4. **Notifications**
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+   - View and manage notifications related to tasks and projects.
+   - Create custom notifications.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+5. **User Profile**
 
-### `npm run eject`
+   - Edit user details such as name, email, phone, and avatar.
+   - Change passwords.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+6. **Dashboard**
+   - View task statistics.
+   - Filter and view tasks in a centralized interface.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Project Structure
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```
+src/
+├── components/
+│   ├── AuthComponent.js
+│   ├── Navbar.js
+│   ├── Notifications.js
+│   ├── TaskItem.jsx
+│   ├── FilterBar.jsx
+│   └── TaskStats.jsx
+├── pages/
+│   ├── Dashboard.jsx
+│   ├── TaskListPage.jsx
+│   ├── TaskDetailPage.jsx
+│   ├── ProjectPage.jsx
+│   └── ProjectDetailPage.jsx
+├── App.js
+├── index.js
+├── contexts/
+│   └── UserContext.js
+├── utils/
+└── styles/
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Installation
 
-## Learn More
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   ```
+2. Navigate to the project directory:
+   ```bash
+   cd task-management-system
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Running the Application
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+1. Start the development server:
+   ```bash
+   npm start
+   ```
+2. Open your browser and navigate to `http://localhost:3000`.
 
-### Code Splitting
+## Key Components
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### AuthComponent.js
 
-### Analyzing the Bundle Size
+Handles user authentication, including login and registration.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### Navbar.js
 
-### Making a Progressive Web App
+Displays the navigation bar with links to key pages such as Dashboard, Tasks, Projects, and Profile.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### TaskItem.jsx
 
-### Advanced Configuration
+Defines a single task row with actions like editing, marking complete, and deleting tasks.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### FilterBar.jsx
 
-### Deployment
+Provides filtering options for tasks based on status, date range, and keywords.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### TaskStats.jsx
 
-### `npm run build` fails to minify
+Visualizes task statistics using a pie chart.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Notifications.js
+
+Manages and displays notifications.
+
+### Dashboard.jsx
+
+Serves as the main interface for viewing tasks and task statistics.
+
+### TaskListPage.jsx
+
+Lists tasks with options for sorting, filtering, and managing statuses.
+
+### ProjectPage.jsx
+
+Manages projects and their associated members and tasks.
+
+### ProjectDetailPage.jsx
+
+Displays details about a specific project, including its tasks and members.
+
+## API Endpoints
+
+The application interacts with a backend server running on `http://localhost:5001`. Key endpoints include:
+
+### Authentication
+
+- `POST /api/auth/login`: Login a user.
+- `POST /api/auth/register`: Register a new user.
+
+### Tasks
+
+- `GET /api/task`: Retrieve all tasks.
+- `GET /api/task/:id`: Retrieve details of a specific task.
+- `POST /api/task`: Create a new task.
+- `PATCH /api/task/:id`: Update a task.
+- `DELETE /api/task/:id`: Delete a task.
+
+### Projects
+
+- `GET /api/project`: Retrieve all projects.
+- `GET /api/project/:id`: Retrieve details of a specific project.
+- `POST /api/project`: Create a new project.
+- `PATCH /api/project/:id`: Update a project.
+- `DELETE /api/project/:id`: Delete a project.
+
+### Notifications
+
+- `GET /api/notification`: Retrieve all notifications.
+- `POST /api/notification`: Create a new notification.
+- `PATCH /api/notification/:id`: Update a notification.
+- `DELETE /api/notification/:id`: Delete a notification.
+
+## Development Tools
+
+- **React Router**: For routing between different pages.
+- **Material-UI**: For UI components and styling.
+- **Axios**: For API calls.
+- **Recharts**: For visualizing task statistics.
+
+## Contributions
+
+Feel free to fork the repository and submit pull requests. Contributions are welcome.
+
+## License
+
+This project is licensed under the MIT License.
