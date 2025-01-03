@@ -139,10 +139,12 @@ const UserProfile = () => {
       const token = localStorage.getItem("token");
       const decodedToken = jwtDecode(token);
       const userId = decodedToken.id;
-    
+
       try {
-        const response = await axios.get(`http://localhost:5001/api/project/user/${userId}`);
-        
+        const response = await axios.get(
+          `http://localhost:5001/api/project/user/${userId}`
+        );
+
         // Lọc dự án do chính người dùng tạo (owner)
         const projects = response.data
           .filter((project) => project.owner._id === userId)
@@ -153,7 +155,7 @@ const UserProfile = () => {
             startDate: project.startDate,
             dueDate: project.dueDate,
           }));
-    
+
         setProfile((prevState) => ({
           ...prevState,
           projects,
@@ -166,8 +168,8 @@ const UserProfile = () => {
         });
       }
     };
-    
-    fetchUserProjects();    
+
+    fetchUserProjects();
   }, [navigate]);
 
   const handleProfileUpdate = async () => {
@@ -291,7 +293,6 @@ const UserProfile = () => {
       severity: "success",
     });
   };
-  
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -487,28 +488,35 @@ const UserProfile = () => {
             My Projects
           </Typography>
           <Grid container spacing={3}>
-          {profile.projects.map((project) => (
-            <Grid item xs={12} sm={6} md={4} key={project.id}>
-              <StyledCard>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    {project.title}
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    {project.description}
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary" display="block">
-                    Start: {new Date(project.startDate).toLocaleDateString()}
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary" display="block">
-                    Due: {new Date(project.dueDate).toLocaleDateString()}
-                  </Typography>
-                </CardContent>
-              </StyledCard>
-            </Grid>
-          ))}
-        </Grid>
-
+            {profile.projects.map((project) => (
+              <Grid item xs={12} sm={6} md={4} key={project.id}>
+                <StyledCard>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      {project.title}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      {project.description}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      color="textSecondary"
+                      display="block"
+                    >
+                      Start: {new Date(project.startDate).toLocaleDateString()}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      color="textSecondary"
+                      display="block"
+                    >
+                      Due: {new Date(project.dueDate).toLocaleDateString()}
+                    </Typography>
+                  </CardContent>
+                </StyledCard>
+              </Grid>
+            ))}
+          </Grid>
         </Grid>
       </Grid>
 
