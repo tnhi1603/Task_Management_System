@@ -357,14 +357,19 @@ const ProjectDetailPage = () => {
             )}
           </Box>
           <List>
-            {project.members.map((member) => (
-              <ListItem key={member._id}>
-                <ListItemAvatar>
-                  <Avatar>{member.name.charAt(0)}</Avatar>
-                </ListItemAvatar>
-                <ListItemText primary={member.name} secondary={member.email} />
-              </ListItem>
-            ))}
+            {project.members
+              .filter((member) => member._id !== project.owner._id)
+              .map((member) => (
+                <ListItem key={member._id}>
+                  <ListItemAvatar>
+                    <Avatar>{member.name.charAt(0)}</Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={member.name}
+                    secondary={member.email}
+                  />
+                </ListItem>
+              ))}
           </List>
           <Divider sx={{ my: 2 }} />
           <Typography variant="h6">Tasks</Typography>
