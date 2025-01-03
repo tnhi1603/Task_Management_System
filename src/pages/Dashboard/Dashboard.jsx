@@ -5,6 +5,7 @@ import TaskList from "../../components/TaskList";
 import TaskStats from "../../components/TaskStats";
 import AddTaskButton from "../../components/AddTaskButton";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
 const Dashboard = ({ filteredTasks, setFilteredTasks }) => {
   const [tasks, setTasks] = useState([]);
@@ -20,8 +21,10 @@ const Dashboard = ({ filteredTasks, setFilteredTasks }) => {
     const fetchTasksAndStatistics = async () => {
       try {
         const token = localStorage.getItem("token");
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken.id;
         const tasksResponse = await axios.get(
-          "http://localhost:5001/api/task",
+          `http://localhost:5001/api/task/user/${userId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
