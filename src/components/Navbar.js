@@ -57,13 +57,20 @@ const Navbar = () => {
   const navItems = [
     { text: "Dashboard", icon: <FaHome size={20} />, path: "/" },
     { text: "Tasks", icon: <FaTasks size={20} />, path: "/tasks" },
-    { text: "Task Details", icon: <FaClipboardList size={20} />, path: "/task-details" },
-    { text: "Projects", icon: <FaProjectDiagram size={20} />, path: "/projects" },
-    { text: "Notifications", icon: (
+    {
+      text: "Projects",
+      icon: <FaProjectDiagram size={20} />,
+      path: "/projects",
+    },
+    {
+      text: "Notifications",
+      icon: (
         <Badge badgeContent={5} color="error">
           <FaBell size={20} />
         </Badge>
-      ), path: "/notifications" },
+      ),
+      path: "/notifications",
+    },
     { text: "Profile", icon: <FaUser size={20} />, path: "/profile" },
   ];
 
@@ -76,7 +83,8 @@ const Navbar = () => {
               button
               sx={{
                 "&:hover": { backgroundColor: "#e3f2fd" },
-                backgroundColor: location.pathname === item.path ? "#fff" : "transparent", // Màu nền trắng khi đang chọn
+                backgroundColor:
+                  location.pathname === item.path ? "#fff" : "transparent", // Màu nền trắng khi đang chọn
                 color: location.pathname === item.path ? "#1976d2" : "inherit", // Màu chữ xanh khi đang chọn
               }}
             >
@@ -119,8 +127,12 @@ const Navbar = () => {
                     startIcon={item.icon}
                     aria-label={item.text}
                     sx={{
-                      backgroundColor: location.pathname === item.path ? "#fff" : "transparent", // Màu nền trắng khi đang chọn
-                      color: location.pathname === item.path ? "#1976d2" : "inherit", // Màu chữ xanh khi đang chọn
+                      backgroundColor:
+                        location.pathname === item.path
+                          ? "#fff"
+                          : "transparent", // Màu nền trắng khi đang chọn
+                      color:
+                        location.pathname === item.path ? "#1976d2" : "inherit", // Màu chữ xanh khi đang chọn
                     }}
                   >
                     {item.text}

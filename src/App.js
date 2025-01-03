@@ -101,7 +101,7 @@ function App() {
             }
           />
           <Route
-            path="/task-details/:id"
+            path="/task-details/:taskId"
             element={
               <ProtectedRoute>
                 <TaskDetailPage />

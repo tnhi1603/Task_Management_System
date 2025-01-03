@@ -1,347 +1,461 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-
+import { jwtDecode } from "jwt-decode";
 import {
   Box,
   Typography,
   TextField,
   Button,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
-  Paper,
+  Card,
+  CardContent,
+  CardActions,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   MenuItem,
+  Snackbar,
+  Alert,
+  Grid,
+  Paper,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
-import { useLocation } from "react-router-dom";
-const commentsBefore = [
-  {
-    id: 1,
-    taskId: 1, // ID của công việc liên quan
-    userId: 101, // ID của người dùng đã comment
-    text: "Mẫu thiết kế này rất tốt, nhưng cần thêm phần biểu đồ.",
-    timestamp: "2024-12-05T08:30:00Z", // Thời gian comment
-  },
-  {
-    id: 2,
-    taskId: 1,
-    userId: 102,
-    text: "Đồng ý, cần bổ sung thêm màu sắc phù hợp.",
-    timestamp: "2024-12-05T09:00:00Z",
-  },
-  {
-    id: 3,
-    taskId: 2,
-    userId: 103,
-    text: "API này có cần thêm chức năng phân trang không?",
-    timestamp: "2024-12-06T10:15:00Z",
-  },
-  {
-    id: 4,
-    taskId: 3,
-    userId: 104,
-    text: "Họp nhóm đã đủ thông tin, có thể triển khai ngay.",
-    timestamp: "2024-12-04T14:45:00Z",
-  },
-  {
-    id: 5,
-    taskId: 4,
-    userId: 101,
-    text: "Tìm kiếm hoạt động tốt, nhưng tốc độ vẫn chưa ổn định.",
-    timestamp: "2024-12-06T16:20:00Z",
-  },
-  {
-    id: 6,
-    taskId: 5,
-    userId: 102,
-    text: "Cần làm rõ hơn từng bước trong hướng dẫn.",
-    timestamp: "2024-12-07T11:00:00Z",
-  },
-  {
-    id: 7,
-    taskId: 6,
-    userId: 103,
-    text: "Unit test có tỷ lệ pass thấp, cần kiểm tra lại.",
-    timestamp: "2024-12-08T09:30:00Z",
-  },
-  {
-    id: 8,
-    taskId: 7,
-    userId: 104,
-    text: "AWS đã được cấu hình, nhưng cần xác nhận quyền truy cập.",
-    timestamp: "2024-12-09T12:15:00Z",
-  },
-  {
-    id: 9,
-    taskId: 8,
-    userId: 101,
-    text: "Hiệu năng đã cải thiện đáng kể sau khi tối ưu hóa.",
-    timestamp: "2024-12-10T08:00:00Z",
-  },
-  {
-    id: 10,
-    taskId: 9,
-    userId: 102,
-    text: "Logo và favicon cần có kích thước phù hợp với mobile.",
-    timestamp: "2024-12-05T17:45:00Z",
-  },
-  {
-    id: 11,
-    taskId: 10,
-    userId: 103,
-    text: "Thông báo hoạt động tốt trên email nhưng chưa hỗ trợ SMS.",
-    timestamp: "2024-12-06T20:10:00Z",
-  },
-  {
-    id: 12,
-    taskId: 11,
-    userId: 104,
-    text: "Cần cải tiến UI, đặc biệt là trong phần hiển thị danh sách.",
-    timestamp: "2024-12-07T07:50:00Z",
-  },
-  {
-    id: 13,
-    taskId: 12,
-    userId: 101,
-    text: "Phân quyền hoạt động đúng, nhưng thiếu chức năng báo cáo.",
-    timestamp: "2024-12-08T09:20:00Z",
-  },
-  {
-    id: 14,
-    taskId: 13,
-    userId: 102,
-    text: "Buổi đào tạo cần tổ chức trực tuyến để thuận tiện hơn.",
-    timestamp: "2024-12-10T15:30:00Z",
-  },
-  {
-    id: 15,
-    taskId: 14,
-    userId: 103,
-    text: "Báo cáo tiến độ cần bổ sung phần chú thích chi tiết.",
-    timestamp: "2024-12-11T10:25:00Z",
-  },
-  {
-    id: 16,
-    taskId: 15,
-    userId: 104,
-    text: "Chức năng nhập xuất cần hỗ trợ định dạng JSON.",
-    timestamp: "2024-12-12T14:10:00Z",
-  },
-  {
-    id: 17,
-    taskId: 16,
-    userId: 101,
-    text: "Giao diện chế độ tối trông rất ổn, nhưng cần kiểm tra thêm.",
-    timestamp: "2024-12-13T08:30:00Z",
-  },
-  {
-    id: 18,
-    taskId: 17,
-    userId: 102,
-    text: "Hệ thống cần có kế hoạch bảo trì tự động.",
-    timestamp: "2024-12-14T09:50:00Z",
-  },
-  {
-    id: 19,
-    taskId: 18,
-    userId: 103,
-    text: "Unit test chưa cover đủ các case quan trọng.",
-    timestamp: "2024-12-15T11:45:00Z",
-  },
-  {
-    id: 20,
-    taskId: 19,
-    userId: 104,
-    text: "Index đã được thêm, tốc độ truy vấn cải thiện rõ rệt.",
-    timestamp: "2024-12-16T13:30:00Z",
-  },
-];
+import axios from "axios";
 
 const TaskDetailPage = () => {
-  const [comment, setComment] = useState(""); // Bình luận mới
-  const [comments, setComments] = useState(commentsBefore); // Danh sách bình luận
+  const { taskId } = useParams();
+  const navigate = useNavigate();
 
-  const handleAddComment = () => {
-    const newComment = {
-      id: comments.length + 1,
-      taskId: comments.length + 1,
-      userId: comments.length + 1,
-      text: comment,
-      timestamp: new Date(task.dueDate).toLocaleString(),
-    };
-    setComments([...comments, newComment]);
-    setComment("");
-  };
-
-  const location = useLocation();
-  const { task } = location.state || {}; // Trích xuất dữ liệu
-
-  const [title, setTitle] = useState(task?.title || "");
-  const [description, setDescription] = useState(task?.description || "");
-  const [priority, setPriority] = useState(task?.priority || "");
-  const [status, setStatus] = useState(task?.status || "");
-  const [dueDate, setDueDate] = useState(task?.dueDate || "");
+  const [task, setTask] = useState(null);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState("");
+  const [status, setStatus] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [updatedAt, setUpdatedAt] = useState("");
   const [openEditDialog, setOpenEditDialog] = useState(false);
-  const handleEdit = () => {
-    // setEditedTask(task); // Gán dữ liệu công việc vào trạng thái chỉnh sửa
-    setOpenEditDialog(true); // Mở hộp thoại
+  const [openStatusDialog, setOpenStatusDialog] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  useEffect(() => {
+    const fetchTaskDetails = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5001/api/task/${taskId}`
+        );
+        const taskData = response.data;
+        setTask(taskData);
+        setTitle(taskData.title);
+        setDescription(taskData.description);
+        setPriority(taskData.priority);
+        setStatus(taskData.status);
+        setDueDate(new Date(taskData.dueDate).toISOString().slice(0, 16));
+        setStartDate(new Date(taskData.startDate).toISOString().slice(0, 16));
+        setUpdatedAt(
+          taskData.updateTime
+            ? formatDateTime(new Date(taskData.updateTime))
+            : formatDateTime(new Date())
+        );
+
+        const token = localStorage.getItem("token");
+        if (token) {
+          const decodedToken = jwtDecode(token);
+          const userId = decodedToken.id;
+
+          if (taskData.project_owner._id === userId) {
+            setIsOwner(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching task details:", error);
+      }
+    };
+
+    if (taskId) {
+      fetchTaskDetails();
+    }
+  }, [taskId]);
+
+  const formatDateTime = (date) => {
+    return date.toLocaleString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
   };
 
-  const handleSaveEdit = () => {
-    // console.log("Đã lưu chỉnh sửa:", editedTask);
-    setOpenEditDialog(false); // Đóng hộp thoại
+  const handleEdit = () => {
+    setOpenEditDialog(true);
   };
+
+  const handleSaveEdit = async () => {
+    try {
+      const updatedTask = {
+        title,
+        description,
+        priority,
+        status,
+        dueDate,
+        startDate,
+      };
+      const token = localStorage.getItem("token");
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const response = await axios.put(
+        `http://localhost:5001/api/task/${task._id}`,
+        updatedTask,
+        config
+      );
+      setTask(response.data);
+      setOpenEditDialog(false);
+      setSnackbar({
+        open: true,
+        message: "Công việc đã được cập nhật.",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error updating task:", error);
+      setSnackbar({
+        open: true,
+        message: "Cập nhật công việc thất bại. Vui lòng thử lại.",
+        severity: "error",
+      });
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      await axios.delete(`http://localhost:5001/api/task/${task._id}`, config);
+      navigate("/tasks");
+      setSnackbar({
+        open: true,
+        message: "Công việc đã được xóa.",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      setSnackbar({
+        open: true,
+        message: "Xóa công việc thất bại. Vui lòng thử lại.",
+        severity: "error",
+      });
+    }
+  };
+
+  const handleMarkComplete = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.patch(
+        `http://localhost:5001/api/task/${taskId}/status`,
+        { status: "Completed" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setTask(response.data);
+      setSnackbar({
+        open: true,
+        message: "Công việc đã được đánh dấu hoàn thành.",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error marking task as completed:", error);
+      setSnackbar({
+        open: true,
+        message: "Không thể đánh dấu hoàn thành. Vui lòng thử lại.",
+        severity: "error",
+      });
+    }
+  };
+
+  const handleEditStatus = () => {
+    setOpenStatusDialog(true);
+  };
+
+  const handleSaveStatus = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.patch(
+        `http://localhost:5001/api/task/${taskId}/status`,
+        { status },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setTask(response.data);
+      setOpenStatusDialog(false);
+      setSnackbar({
+        open: true,
+        message: "Trạng thái công việc đã được cập nhật.",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error updating task status:", error);
+      setSnackbar({
+        open: true,
+        message: "Cập nhật trạng thái thất bại. Vui lòng thử lại.",
+        severity: "error",
+      });
+    }
+  };
+
   if (!task) return <Typography>Đang tải thông tin công việc...</Typography>;
 
   return (
-    <Box padding={4}>
-      <Paper elevation={3} padding={3} marginBottom={3}>
-        <Typography variant="h4" marginBottom={2}>
-          {task.title}
-        </Typography>
-        <Typography variant="body1" marginBottom={1}>
-          <strong>Mô tả:</strong> {task.description}
-        </Typography>
-        <Typography variant="body1" marginBottom={1}>
-          <strong>Mức độ ưu tiên:</strong> {task.priority}
-        </Typography>
-        <Typography variant="body1" marginBottom={1}>
-          <strong>Trạng thái:</strong> {task.status}
-        </Typography>
-        <Typography variant="body1" marginBottom={1}>
-          <strong>Thời hạn:</strong> {new Date(task.dueDate).toLocaleString()}
-        </Typography>
-
-        <Button variant="contained" color="primary" onClick={handleEdit}>
-          Chỉnh sửa công việc
-        </Button>
+    <Box padding={4} bgcolor="#f5f5f5" minHeight="100vh">
+      <Paper elevation={3} sx={{ padding: 4, marginBottom: 4 }}>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Typography variant="h4" gutterBottom color="primary">
+              {task.title}
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Typography variant="subtitle1" gutterBottom>
+              <strong>Mô tả:</strong> {task.description || "Không có"}
+            </Typography>
+            <Typography variant="subtitle1" gutterBottom>
+              <strong>Mức độ ưu tiên:</strong> {task.priority || "Không có"}
+            </Typography>
+            <Typography variant="subtitle1" gutterBottom>
+              <strong>Trạng thái:</strong> {task.status || "Không có"}
+            </Typography>
+            <Typography variant="subtitle1" gutterBottom>
+              <strong>Thời hạn:</strong>{" "}
+              {task.dueDate
+                ? formatDateTime(new Date(task.dueDate))
+                : "Không có"}
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Typography variant="subtitle1" gutterBottom>
+              <strong>Ngày bắt đầu:</strong>{" "}
+              {task.startDate
+                ? formatDateTime(new Date(task.startDate))
+                : "Không có"}
+            </Typography>
+            <Typography variant="subtitle1" gutterBottom>
+              <strong>Ngày cập nhật:</strong> {updatedAt || "Không có"}
+            </Typography>
+            <Typography variant="subtitle1" gutterBottom>
+              <strong>Dự án:</strong> {task.project_details?.name || "Không có"}
+            </Typography>
+            <Typography variant="subtitle1" gutterBottom>
+              <strong>Người tạo dự án:</strong>{" "}
+              {task.project_owner?.name || "Không có"}
+            </Typography>
+            <Typography variant="subtitle1" gutterBottom>
+              <strong>Thành viên được phân công:</strong>{" "}
+              {task.assigned_users?.name || "Không có"}
+            </Typography>
+          </Grid>
+          {isOwner && (
+            <Grid item xs={12}>
+              <Box display="flex" gap={2}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleEdit}
+                  sx={{ textTransform: "none" }}
+                >
+                  Chỉnh sửa công việc
+                </Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={handleDelete}
+                  sx={{ textTransform: "none" }}
+                >
+                  Xóa công việc
+                </Button>
+              </Box>
+            </Grid>
+          )}
+          <Grid item xs={12}>
+            <Box display="flex" gap={2}>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={handleMarkComplete}
+                sx={{ textTransform: "none" }}
+              >
+                Đánh dấu hoàn thành
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleEditStatus}
+                sx={{ textTransform: "none" }}
+              >
+                Sửa trạng thái
+              </Button>
+            </Box>
+          </Grid>
+        </Grid>
       </Paper>
 
-      {/* Hộp thoại chỉnh sửa công việc */}
+      {/* Edit Task Dialog */}
       <Dialog
         open={openEditDialog}
         onClose={() => setOpenEditDialog(false)}
         fullWidth
+        maxWidth="md"
       >
         <DialogTitle>Chỉnh sửa công việc</DialogTitle>
         <DialogContent>
-          <TextField
-            fullWidth
-            label="Tiêu đề"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Mô tả"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Mức độ ưu tiên"
-            select
-            value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-            margin="normal"
-          >
-            <MenuItem value="Thấp">Thấp</MenuItem>
-            <MenuItem value="Trung bình">Trung bình</MenuItem>
-            <MenuItem value="Cao">Cao</MenuItem>
-          </TextField>
-          <TextField
-            fullWidth
-            label="Trạng thái"
-            select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            margin="normal"
-          >
-            <MenuItem value="Đang thực hiện">Đang thực hiện</MenuItem>
-            <MenuItem value="Hoàn thành">Hoàn thành</MenuItem>
-            <MenuItem value="Tạm dừng">Tạm dừng</MenuItem>
-          </TextField>
-          <TextField
-            fullWidth
-            label="Thời hạn"
-            type="datetime-local"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            margin="normal"
-            InputLabelProps={{ shrink: true }}
-          />
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Tiêu đề"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                margin="normal"
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Mô tả"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                margin="normal"
+                multiline
+                rows={4}
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Mức độ ưu tiên"
+                select
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                margin="normal"
+                variant="outlined"
+              >
+                <MenuItem value="Low">Thấp</MenuItem>
+                <MenuItem value="Medium">Trung bình</MenuItem>
+                <MenuItem value="High">Cao</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Trạng thái"
+                select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                margin="normal"
+                variant="outlined"
+              >
+                <MenuItem value="Not Started">Chưa bắt đầu</MenuItem>
+                <MenuItem value="In Progress">Đang tiến hành</MenuItem>
+                <MenuItem value="Completed">Hoàn thành</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Thời hạn"
+                type="datetime-local"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                margin="normal"
+                InputLabelProps={{ shrink: true }}
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Ngày bắt đầu"
+                type="datetime-local"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                margin="normal"
+                InputLabelProps={{ shrink: true }}
+                variant="outlined"
+              />
+            </Grid>
+          </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenEditDialog(false)}>Hủy</Button>
+          <Button onClick={() => setOpenEditDialog(false)} color="secondary">
+            Hủy
+          </Button>
+          <Button variant="contained" color="primary" onClick={handleSaveEdit}>
+            Lưu
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Status Dialog */}
+      <Dialog
+        open={openStatusDialog}
+        onClose={() => setOpenStatusDialog(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Sửa Trạng Thái Công Việc</DialogTitle>
+        <DialogContent>
+          <TextField
+            select
+            label="Trạng Thái"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            fullWidth
+            margin="normal"
+            variant="outlined"
+          >
+            <MenuItem value="Not Started">Chưa bắt đầu</MenuItem>
+            <MenuItem value="In Progress">Đang tiến hành</MenuItem>
+            <MenuItem value="Completed">Hoàn thành</MenuItem>
+          </TextField>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenStatusDialog(false)} color="secondary">
+            Hủy
+          </Button>
           <Button
-            // onClick={handleSaveEdit}
             variant="contained"
             color="primary"
+            onClick={handleSaveStatus}
           >
             Lưu
           </Button>
         </DialogActions>
       </Dialog>
-      {/* Các công việc liên quan */}
-      {task.relatedTasks?.length > 0 && (
-        <Paper elevation={2} padding={2} marginBottom={3}>
-          <Typography variant="h6" marginBottom={2}>
-            Công việc liên quan:
-          </Typography>
-          <List>
-            {task.relatedTasks.map((relatedTask) => (
-              <ListItem key={relatedTask.id}>
-                <ListItemText
-                  primary={relatedTask.title}
-                  secondary={`Thời hạn: ${new Date(
-                    relatedTask.dueDate
-                  ).toLocaleString()}`}
-                />
-              </ListItem>
-            ))}
-          </List>
-        </Paper>
-      )}
-      {/* Khu vực bình luận */}
-      <Paper elevation={2} padding={2}>
-        <Typography variant="h6" marginBottom={2}>
-          Bình luận
-        </Typography>
-        <List>
-          {comments.map((comment, index) => (
-            <React.Fragment key={index}>
-              <ListItem>
-                <ListItemText primary={comment.text} />
-              </ListItem>
-              <Divider />
-            </React.Fragment>
-          ))}
-        </List>
-        <Box display="flex" gap={2} marginTop={2}>
-          <TextField
-            fullWidth
-            // sx={{ width: "2000px" }}
-            label="Thêm bình luận"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddComment}
-            disabled={!comment.trim()}
-          >
-            Gửi
-          </Button>
-        </Box>
-      </Paper>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
