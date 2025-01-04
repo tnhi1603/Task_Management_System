@@ -66,7 +66,7 @@ const ProjectDetailPage = () => {
     title: "",
     description: "",
     priority: "Medium",
-    status: "Not Started",
+    status: "In Progress",
     startDate: "",
     dueDate: "",
     idUser: null,
@@ -107,6 +107,7 @@ const ProjectDetailPage = () => {
         dueDate: response.data.dueDate
           ? response.data.dueDate.split("T")[0]
           : "",
+        status: response.data.status || "In Progress",
       });
       setSelectedMembers(response.data.members.map((m) => m._id));
     } catch (error) {
@@ -318,7 +319,17 @@ const ProjectDetailPage = () => {
             {project.description}
           </Typography>
           <Box display="flex" alignItems="center" mb={2}>
-            <Chip label={project.status} color="primary" />
+            {/* <Chip label={project.status} color="primary" /> */}
+            <Chip
+              label={project.status}
+              color={
+                project.status === "In Progress"
+                  ? "primary"
+                  : project.status === "Completed"
+                  ? "success"
+                  : "default"
+              }
+            />
             <Box ml={2}>
               <Typography variant="body2">
                 Progress: {project.progress?.toFixed(2)}%
@@ -488,6 +499,20 @@ const ProjectDetailPage = () => {
             sx={{ mb: 2 }}
           />
           <TextField
+            label="Status"
+            name="status"
+            select
+            fullWidth
+            value={editedProject.status}
+            onChange={handleInputChange}
+            sx={{ mb: 2 }}
+            SelectProps={{ native: true }}
+          >
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+            <option value="Closed">Closed</option>
+          </TextField>
+          <TextField
             label="Start Date"
             name="startDate"
             type="date"
@@ -545,9 +570,23 @@ const ProjectDetailPage = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={openTaskDialog} onClose={() => setOpenTaskDialog(false)}>
+      <Dialog
+        open={openTaskDialog}
+        onClose={() => setOpenTaskDialog(false)}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          style: { maxHeight: "90vh", overflow: "visible" },
+        }}
+      >
         <DialogTitle>Add New Task</DialogTitle>
-        <DialogContent>
+        <DialogContent
+          dividers
+          sx={{
+            overflowY: "auto",
+            maxHeight: "calc(90vh - 100px)",
+          }}
+        >
           <TextField
             label="Task Title"
             name="title"
@@ -601,7 +640,7 @@ const ProjectDetailPage = () => {
             InputLabelProps={{ shrink: true }}
           />
           <Autocomplete
-            options={users}
+            options={getProjectMembers()}
             getOptionLabel={(option) => option.name + " - " + option.email}
             value={
               newTask.assignedMember
@@ -680,12 +719,27 @@ const ProjectDetailPage = () => {
       </Dialog>
 
       {/* New Edit Task Dialog */}
+      {/* <Dialog
+        open={openEditTaskDialog}
+        onClose={() => setOpenEditTaskDialog(false)}
+      > */}
       <Dialog
         open={openEditTaskDialog}
         onClose={() => setOpenEditTaskDialog(false)}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          style: { maxHeight: "90vh", overflow: "visible" },
+        }}
       >
         <DialogTitle>Edit Task</DialogTitle>
-        <DialogContent>
+        <DialogContent
+          dividers
+          sx={{
+            overflowY: "auto",
+            maxHeight: "calc(90vh - 100px)",
+          }}
+        >
           <TextField
             label="Task Title"
             name="title"
