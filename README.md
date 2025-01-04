@@ -1,8 +1,22 @@
 # Task Management System
 
+## Course Details
+
+- **Course**: SE347.P12 - Công nghệ Web và ứng dụng
+- **Instructor**: Nguyễn Tấn Toàn
+- **Institution**: University of Information Technology (UIT), Ho Chi Minh City
+
 ## Overview
 
 The Task Management System is a React-based application designed to help users manage tasks and projects efficiently. It provides features such as task creation, project management, notifications, and user profiles. The app utilizes Material-UI for its design and includes various interactive components for a seamless user experience.
+
+## Group Members
+
+- **19522283**: Nguyễn Ngọc Thịnh
+- **21522679**: Trần Trung Tín
+- **21521236**: Trần Thảo Nhi
+- **20521353**: Nguyễn Văn Hoành
+- **20521875**: Nguyễn Duy Tân
 
 ## Features
 
